@@ -1,0 +1,85 @@
+<div class="settings-management-container">
+  <div class="header-section">
+    <h1>Configuración del Sistema</h1>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+  <div class="settings-card">
+    <div class="loading-indicator" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando configuración...</p>
+    </div>
+
+    <form (ngSubmit)="saveSettings()" *ngIf="!isLoading">
+      <div *ngFor="let category of getCategoryKeys()" class="settings-category">
+        <h2>{{ category }}</h2>
+        <div *ngFor="let setting of groupedSettings[category]" class="setting-item">
+          <div class="setting-info">
+            <label [for]="setting.key">{{ setting.description }}</label>
+            <p class="setting-key">{{ setting.key }}</p>
+          </div>
+          <div class="setting-input">
+            <!-- Input para TEXT y NUMBER -->
+            <input
+              *ngIf="setting.type === 'TEXT' || setting.type === 'NUMBER'"
+              [id]="setting.key"
+              [type]="setting.type === 'NUMBER' ? 'number' : 'text'"
+              [(ngModel)]="setting.value"
+              [name]="setting.key"
+              [readOnly]="!isRootUser()"
+              [ngClass]="{'readonly-input': !isRootUser()}">
+
+            <!-- Textarea para TEXTAREA -->
+            <textarea
+              *ngIf="setting.type === 'TEXTAREA'"
+              [id]="setting.key"
+              [(ngModel)]="setting.value"
+              [name]="setting.key"
+              [readOnly]="!isRootUser()"
+              [ngClass]="{'readonly-input': !isRootUser()}"
+              rows="3"></textarea>
+
+            <!-- Input para IMAGE_URL -->
+            <div *ngIf="setting.type === 'IMAGE_URL'" class="image-url-input">
+              <input
+                [id]="setting.key"
+                type="text"
+                [(ngModel)]="setting.value"
+                [name]="setting.key + '_url'"
+                [readOnly]="true"
+                class="readonly-input">
+              <input
+                [id]="setting.key + '_file'"
+                type="file"
+                (change)="onFileSelected($event, setting)"
+                [disabled]="!isRootUser() || isSaving"
+                accept="image/*">
+              <img [src]="setting.tempPreviewUrl || setting.value" alt="Preview" class="image-preview" *ngIf="setting.tempPreviewUrl || setting.value">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions" *ngIf="isRootUser()">
+        <button type="submit" class="btn btn-success" [disabled]="isSaving">
+          <span *ngIf="!isSaving">Guardar Cambios</span>
+          <span *ngIf="isSaving" class="saving-indicator">
+            <span class="spinner-small"></span> Guardando...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Guardado Exitoso -->
+<app-confirmation-modal
+  [isOpen]="showSaveSuccessModal"
+  title="Configuración Guardada"
+  message="La configuración se ha guardado exitosamente."
+  confirmText="Aceptar"
+  type="success"
+  (confirm)="closeSaveSuccessModal()">
+</app-confirmation-modal>

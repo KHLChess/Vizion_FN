@@ -1,0 +1,154 @@
+<div class="commission-management-container">
+  <div class="header-section">
+    <h1>Gestión de Comisiones</h1>
+    <div class="header-actions" *ngIf="!isLoading && commissions.length > 0">
+      <button class="btn btn-secondary" (click)="generateReport('pdf')" [disabled]="isGeneratingReport">
+        <i class="material-icons">picture_as_pdf</i> Exportar a PDF
+      </button>
+      <button class="btn btn-success" (click)="generateReport('xls')" [disabled]="isGeneratingReport" *ngIf="authService.hasRole('ROOT')">
+        <i class="material-icons">table_chart</i> Exportar a XLS
+      </button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="loading-indicator" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando comisiones...</p>
+    </div>
+
+    <div class="table-responsive" *ngIf="!isLoading">
+      <table>
+        <thead>
+          <tr>
+            <th>Beneficiario</th>
+            <th>Monto (USD)</th>
+            <th>Monto (MXN)</th>
+            <th>Estado</th>
+            <th>Propiedad</th>
+            <th>Cliente Comprador</th>
+            <th>Fecha de Creación</th>
+            <th>Fecha de Pago</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let commission of filteredCommissions">
+            <td>{{ commission.earningUserName }}</td>
+            <td>{{ commission.amount | currency:'USD':'symbol':'1.2-2' }}</td>
+            <td>{{ (commission.amount * usdToMxnRate) | currency:'MXN':'symbol':'1.2-2' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="commission.status.toLowerCase()">
+                {{ commission.status }}
+              </span>
+            </td>
+            <td>{{ commission.generatingPropertyName }}</td>
+            <td>{{ commission.generatingClientName }}</td>
+            <td>{{ commission.createdAt | date:'medium' }}</td>
+            <td>{{ commission.paidAt ? (commission.paidAt | date:'medium') : 'N/A' }}</td>
+            <td class="actions-column">
+              <!-- Acciones para ROOT -->
+              <ng-container *ngIf="authService.hasRole('ROOT')">
+                <button class="btn-action-table btn-action-table-warning" (click)="editNotes(commission)"><i class="material-icons">edit_note</i></button>
+                <button class="btn-action-table btn-action-table-danger" (click)="voidCommission(commission)" *ngIf="commission.status !== 'VOIDED'"><i class="material-icons">cancel</i></button>
+              </ng-container>
+
+              <!-- Acciones para OWNER -->
+              <ng-container *ngIf="authService.hasRole('OWNER')">
+                <button class="btn-action-table btn-action-table-info" (click)="viewDetails(commission)"><i class="material-icons">info</i></button>
+                <button class="btn-action-table btn-action-table-warning" (click)="editNotes(commission)"><i class="material-icons">edit_note</i></button>
+                <button
+                  *ngIf="commission.status === 'PENDING'"
+                  class="btn-action-table"
+                  (click)="markAsPaid(commission)"
+                  [disabled]="isProcessing">
+                  <i class="material-icons">payments</i>
+                  Marcar como Pagada
+                </button>
+              </ng-container>
+
+              <!-- Acciones para MANAGER (ninguna acción específica en la tabla, solo ver) -->
+              <!-- El MANAGER solo puede ver la tabla, no tiene botones de acción directa aquí según la última especificación -->
+            </td>
+          </tr>
+          <tr *ngIf="filteredCommissions.length === 0">
+            <td colspan="9" class="no-results">No hay comisiones para mostrar.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Pago -->
+<app-confirmation-modal
+  [isOpen]="showPayModal"
+  [isLoading]="isProcessing"
+  title="Confirmar Pago de Comisión"
+  [message]="'¿Está seguro de que desea marcar como pagada la comisión de ' + (commissionToPay?.amount | currency:'USD') + ' para ' + commissionToPay?.earningUserName + '?'"
+  confirmText="Sí, confirmar pago"
+  cancelText="Cancelar"
+  type="success"
+  (confirm)="onConfirmPay()"
+  (cancel)="closePayModal()">
+</app-confirmation-modal>
+
+<!-- Modal de Confirmación de Anulación -->
+<app-confirmation-modal
+  [isOpen]="showVoidModal"
+  [isLoading]="isProcessing"
+  title="Confirmar Anulación de Comisión"
+  [message]="'¿Está seguro de que desea ANULAR la comisión de ' + (commissionToVoid?.amount | currency:'USD') + ' para ' + commissionToVoid?.earningUserName + '? Esta acción es irreversible.'"
+  confirmText="Sí, anular"
+  cancelText="Cancelar"
+  type="danger"
+  (confirm)="onConfirmVoid()"
+  (cancel)="closeVoidModal()">
+</app-confirmation-modal>
+
+<!-- Modal de Edición de Notas -->
+<div class="modal-overlay" *ngIf="showNotesModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>Editar Notas de Comisión</h3>
+      <button class="close-button" (click)="closeNotesModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Comisión ID:</strong> <span>{{ commissionToEditNotes?.id }}</span></p>
+      <p><strong>Beneficiario:</strong> <span>{{ commissionToEditNotes?.earningUserName }}</span></p>
+      <div class="form-group">
+        <label for="commissionNotes">Notas:</label>
+        <textarea id="commissionNotes" [(ngModel)]="currentNotes" rows="5"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeNotesModal()">Cancelar</button>
+      <button class="btn btn-success" (click)="onSaveNotes()" [disabled]="isProcessing">Guardar Notas</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Ver Detalles -->
+<div class="modal-overlay" *ngIf="showDetailsModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>Detalles de Comisión</h3>
+      <button class="close-button" (click)="closeDetailsModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>ID:</strong> <span>{{ commissionToView?.id }}</span></p>
+      <p><strong>Beneficiario:</strong> <span>{{ commissionToView?.earningUserName }}</span></p>
+      <p><strong>Monto (USD):</strong> <span>{{ commissionToView?.amount | currency:'USD':'symbol':'1.2-2' }}</span></p>
+      <p><strong>Monto (MXN):</strong> <span>{{ (commissionToView?.amount * usdToMxnRate) | currency:'MXN':'symbol':'1.2-2' }}</span></p>
+      <p><strong>Estado:</strong> <span>{{ commissionToView?.status }}</span></p>
+      <p><strong>Propiedad:</strong> <span>{{ commissionToView?.generatingPropertyName }}</span></p>
+      <p><strong>Cliente Comprador:</strong> <span>{{ commissionToView?.generatingClientName }}</span></p>
+      <p><strong>Fecha de Creación:</strong> <span>{{ commissionToView?.createdAt | date:'medium' }}</span></p>
+      <p><strong>Fecha de Pago:</strong> <span>{{ commissionToView?.paidAt ? (commissionToView?.paidAt | date:'medium') : 'N/A' }}</span></p>
+      <p><strong>Notas:</strong> <span>{{ commissionToView?.notes || 'Sin notas' }}</span></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDetailsModal()">Cerrar</button>
+    </div>
+  </div>
+</div>

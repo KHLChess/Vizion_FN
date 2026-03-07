@@ -1,0 +1,85 @@
+<div class="about-header">
+  <div class="container">
+    <h1>Nuestra Historia</h1>
+    <p>Construyendo confianza, cimentando sueños desde 2008.</p>
+  </div>
+</div>
+
+<div class="container about-container">
+
+  <!-- Mission & Vision -->
+  <section class="mission-vision animate-slide-up">
+    <div class="mv-card">
+      <i class="material-icons">flag</i>
+      <h2>Misión</h2>
+      <p>Crear espacios habitables que fusionen tecnología, sostenibilidad y diseño, mejorando la calidad de vida de nuestras comunidades y garantizando la inversión de nuestros clientes.</p>
+    </div>
+    <div class="mv-card">
+      <i class="material-icons">visibility</i>
+      <h2>Visión</h2>
+      <p>Ser la desarrolladora inmobiliaria líder en innovación tecnológica en México, redefiniendo la experiencia de compra y gestión de propiedades a través de nuestro ecosistema digital.</p>
+    </div>
+  </section>
+
+  <!-- Timeline Section -->
+  <section class="timeline-section">
+    <h2>Nuestra Trayectoria</h2>
+    <div class="timeline">
+      <div class="timeline-item left animate-fade-in">
+        <div class="content">
+          <h3>2008</h3>
+          <p>Fundación de Cosma. Iniciamos con pequeños proyectos residenciales en Puebla, enfocados en la calidad artesanal.</p>
+        </div>
+      </div>
+      <div class="timeline-item right animate-fade-in">
+        <div class="content">
+          <h3>2015</h3>
+          <p>Expansión Regional. Entregamos nuestro primer desarrollo vertical "Torre Horizonte", marcando un hito en diseño urbano.</p>
+        </div>
+      </div>
+      <div class="timeline-item left animate-fade-in">
+        <div class="content">
+          <h3>2020</h3>
+          <p>Transformación Digital. Iniciamos el desarrollo de nuestra plataforma propietaria para gestión de clientes e inversiones.</p>
+        </div>
+      </div>
+      <div class="timeline-item right animate-fade-in">
+        <div class="content">
+          <h3>2024</h3>
+          <p>Lanzamiento del Ecosistema Cosma. Integramos IoT y servicios financieros para ofrecer una experiencia "Living as a Service".</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team Section -->
+  <section class="team-section">
+    <h2>Liderazgo</h2>
+    <div class="team-grid">
+      <div class="team-member">
+        <div class="member-photo">
+          <img [src]="leaderImage1" alt="Líder 1">
+        </div>
+        <h3>{{ leaderName1 }}</h3>
+        <span class="role">{{ leaderRole1 }}</span>
+      </div>
+      <div class="team-member">
+        <div class="member-photo">
+          <img [src]="leaderImage2" alt="Líder 2">
+        </div>
+        <h3>{{ leaderName2 }}</h3>
+        <span class="role">{{ leaderRole2 }}</span>
+      </div>
+      <!-- Puedes añadir más miembros del equipo aquí si es necesario -->
+    </div>
+  </section>
+
+</div>
+
+<section class="cta-section">
+  <div class="container">
+    <h2>Únete a nuestra historia</h2>
+    <p>Descubre por qué cientos de familias confían en Cosma.</p>
+    <button class="cta-button-secondary" routerLink="/contacto">Conocer Más</button>
+  </div>
+</section>

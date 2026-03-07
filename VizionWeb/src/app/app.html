@@ -1,0 +1,13 @@
+<app-server-down *ngIf="isServerDown" (retry)="onRetryConnection()"></app-server-down>
+
+<div [class.content-hidden]="isServerDown">
+  <!-- Renderizar PublicNavbarComponent si no está logueado y no es la página de login -->
+  <app-public-navbar *ngIf="!isLoggedIn && !isLoginPage"></app-public-navbar>
+
+  <!-- Renderizar AuthenticatedNavbarComponent si está logueado y no es la página de login -->
+  <app-authenticated-navbar *ngIf="isLoggedIn && !isLoginPage"></app-authenticated-navbar>
+
+  <router-outlet />
+
+  <app-footer *ngIf="!isLoginPage"></app-footer> <!-- Ocultar footer en la página de login -->
+</div>

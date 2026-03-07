@@ -1,0 +1,42 @@
+<div class="user-panel-container">
+  <h1>{{ title }}</h1>
+  <p>{{ description }}</p>
+
+  <div class="table-container" *ngIf="!isLoading">
+    <div class="search-bar">
+      <i class="material-icons">search</i>
+      <input type="text" placeholder="Buscar por nombre o email..." [(ngModel)]="searchTerm" (input)="filterDependents()">
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Referente</th>
+            <th>Gestionado Por</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredDependents">
+            <td>{{ user.fullName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role | titlecase }}</td>
+            <td>{{ user.referrer?.fullName || 'N/A' }}</td>
+            <td>{{ user.managedBy?.fullName || 'N/A' }}</td>
+          </tr>
+          <tr *ngIf="filteredDependents.length === 0">
+            <td colspan="5" class="no-results">No se encontraron usuarios con ese criterio.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="loading-indicator" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Cargando equipo...</p>
+  </div>
+</div>

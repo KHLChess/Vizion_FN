@@ -1,0 +1,90 @@
+<div class="hero" [style.background-image]="'url(' + heroBackgroundImage + ')'">
+  <div class="container">
+    <h1 class="animate-fade-in">{{ heroTitle }}</h1>
+    <p class="subtitle animate-slide-up">{{ heroSubtitle }}</p>
+    <button class="cta-button animate-bounce" [routerLink]="heroCtaButtonLink">{{ heroCtaButtonText }}</button>
+  </div>
+</div>
+
+<section class="intro container">
+  <h2>Nuestra Misión</h2>
+  <p>En Cosma, transformamos visiones en estructuras tangibles. Ofrecemos los mejores inmuebles con un diseño elegante y funcional.</p>
+</section>
+
+<section class="featured-properties container">
+  <h2>Propiedades Destacadas</h2>
+  <div class="properties-grid">
+    @for (property of featuredProperties; track property.id) {
+      <div class="property-card">
+        <div class="card-image">
+          <img [src]="property | propertyImage" [alt]="property.title">
+          <span class="price-tag">{{ property.price | currency:'MXN':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="card-content">
+          <h3>{{ property.title }}</h3>
+          <p class="location">{{ property.location }}</p>
+          <div class="card-details">
+            <span><i class="material-icons">bed</i> {{ property.beds }}</span>
+            <span><i class="material-icons">bathtub</i> {{ property.baths }}</span>
+            <span><i class="material-icons">square_foot</i> {{ property.area }} m²</span>
+          </div>
+          <button class="btn-detail property-detail-button" [routerLink]="['/propiedades', property.id]">Ver Detalles</button>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="services-section">
+  <!-- Animated Background Grid -->
+  <div class="blueprint-grid"></div>
+
+  <div class="container relative-z">
+    <h2>{{ servicesTitle }}</h2>
+    <p class="section-subtitle">{{ servicesDescription }}</p>
+
+    <div class="services-grid">
+      @for (service of services; track service.title) {
+        <div class="service-card">
+          <div class="icon-wrapper">
+            <i class="material-icons">{{ service.icon }}</i>
+          </div>
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Impact Stats Strip -->
+    <div class="stats-strip">
+      <div class="stat-item">
+        <span class="stat-number">15+</span>
+        <span class="stat-label">Años de Experiencia</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">350+</span>
+        <span class="stat-label">Familias Felices</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">50+</span>
+        <span class="stat-label">Proyectos Entregados</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">Plusvalía Garantizada</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <h2>¿Listo para encontrar tu hogar ideal?</h2>
+    <p>Contáctanos hoy mismo y uno de nuestros asesores te guiará en el proceso.</p>
+    <button class="cta-button-secondary" routerLink="/contacto">Contactar Ahora</button>
+  </div>
+</section>

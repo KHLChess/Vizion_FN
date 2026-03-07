@@ -1,0 +1,184 @@
+.contact-header {
+  background-color: var(--cosma-primary);
+  color: var(--cosma-text-light);
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.contact-header h1 {
+  color: var(--cosma-secondary);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.contact-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.contact-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  padding: 4rem 1rem;
+  align-items: start;
+}
+
+/* Contact Info */
+.contact-info {
+  background-color: var(--cosma-bg-light);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contact-info h2 {
+  color: var(--cosma-primary);
+  margin-bottom: 1rem;
+}
+
+.contact-info p {
+  color: var(--cosma-text-dark);
+  margin-bottom: 2rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.info-item i {
+  color: var(--cosma-secondary);
+  font-size: 1.5rem;
+  margin-top: 0.2rem;
+}
+
+.info-item h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+  color: var(--cosma-primary);
+}
+
+.info-item p {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--cosma-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.social-icon:hover {
+  background-color: var(--cosma-secondary);
+  transform: translateY(-3px);
+}
+
+/* Contact Form */
+.contact-form-wrapper h2 {
+  color: var(--cosma-primary);
+  margin-bottom: 2rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--cosma-text-dark);
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--cosma-border);
+  border-radius: 4px;
+  font-family: var(--font-family-sans);
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--cosma-secondary);
+}
+
+.btn-submit {
+  background-color: var(--cosma-primary);
+  color: white;
+  border: none;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.btn-submit:hover {
+  background-color: #132744;
+}
+
+/* Map Section */
+.map-section {
+  width: 100%;
+  height: 450px;
+  background-color: #eee;
+  margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}

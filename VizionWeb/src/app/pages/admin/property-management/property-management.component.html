@@ -1,0 +1,254 @@
+<div class="property-management-container">
+  <div class="header-section">
+    <h1>Gestión de Propiedades</h1>
+    <div class="search-bar" *ngIf="!isCreating && !isEditing">
+      <i class="material-icons">search</i>
+      <input type="text" placeholder="Buscar por título o ubicación..." [(ngModel)]="searchTerm" (input)="filterProperties()">
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="onAddProperty()" *ngIf="!isCreating && !isEditing">
+        <i class="material-icons">add_home</i> Añadir Propiedad
+      </button>
+      <button class="btn btn-danger" (click)="onDeleteAll()" *ngIf="!isCreating && !isEditing && properties.length > 0">
+        <i class="material-icons">delete_sweep</i> Eliminar Lista
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage && !showSaveSuccessModal" class="alert alert-success">{{ successMessage }}</div>
+
+  <!-- Formulario -->
+  <div class="property-form-card" *ngIf="isCreating || isEditing">
+    <h2>{{ isCreating ? 'Nueva Propiedad' : 'Editar Propiedad' }}</h2>
+    <p class="form-note">Los campos marcados con <span class="required-asterisk">*</span> son obligatorios.</p>
+    <form (ngSubmit)="onSaveProperty()">
+      <div class="form-group">
+        <label for="title">Título <span class="required-asterisk">*</span></label>
+        <input type="text" id="title" name="title" [(ngModel)]="currentProperty.title" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="status">Estado <span class="required-asterisk">*</span></label>
+          <select id="status" name="status" [(ngModel)]="currentProperty.status" required>
+            <option value="En Venta">En Venta</option>
+            <option value="Renta">Renta</option>
+            <option value="Vendido">Vendido</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="type">Tipo <span class="required-asterisk">*</span></label>
+          <select id="type" name="type" [(ngModel)]="currentProperty.type" required>
+            <option value="Casa">Casa</option>
+            <option value="Departamento">Departamento</option>
+            <option value="Terreno">Terreno</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Campos condicionales para cuando el estado es 'Vendido' -->
+      <div class="form-row" *ngIf="currentProperty.status === 'Vendido'">
+        <div class="form-group">
+          <label for="soldBy">Vendido por <span class="required-asterisk">*</span></label>
+          <select id="soldBy" name="soldById" [(ngModel)]="currentProperty.soldById" (change)="onSoldByChange(currentProperty.soldById)" required>
+            <option [ngValue]="null" disabled>Seleccione quién vendió...</option>
+            <option *ngFor="let user of salesforceUsers" [value]="user.id">
+              {{ user.fullName }} ({{ user.role | titlecase }})
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="boughtBy">Comprado por <span class="required-asterisk">*</span></label>
+          <select id="boughtBy" name="boughtById" [(ngModel)]="currentProperty.boughtById" required [disabled]="dependentUsers.length === 0">
+            <option [ngValue]="null" disabled>{{ dependentUsers.length > 0 ? 'Seleccione el comprador...' : 'No hay dependientes disponibles' }}</option>
+            <option *ngFor="let dep of dependentUsers" [value]="dep.id">
+              {{ dep.fullName }} ({{ dep.role | titlecase }})
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Ubicación <span class="required-asterisk">*</span></label>
+        <input type="text" id="location" name="location" [(ngModel)]="currentProperty.location" required>
+      </div>
+      <div class="form-group">
+        <label for="price">Precio <span class="required-asterisk">*</span></label>
+        <input type="number" id="price" name="price" [(ngModel)]="currentProperty.price" required>
+      </div>
+      <div class="form-group">
+        <label for="beds">Habitaciones</label>
+        <input type="number" id="beds" name="beds" [(ngModel)]="currentProperty.beds">
+      </div>
+      <div class="form-group">
+        <label for="baths">Baños</label>
+        <input type="number" id="baths" name="baths" [(ngModel)]="currentProperty.baths">
+      </div>
+      <div class="form-group">
+        <label for="area">Área (m²)</label>
+        <input type="number" id="area" name="area" [(ngModel)]="currentProperty.area">
+      </div>
+      <div class="form-group">
+        <label for="description">Descripción</label>
+        <textarea id="description" name="description" rows="4" [(ngModel)]="currentProperty.description"></textarea>
+      </div>
+
+      <!-- Campo de Características (Tags) -->
+      <div class="form-group">
+        <label for="features">Características (presiona Enter para añadir)</label>
+        <input type="text" id="features" class="feature-input" [(ngModel)]="featureInput" (keydown)="addFeature($event)" name="featureInput">
+        <div class="features-container">
+          <span *ngFor="let feature of currentProperty.features; let i = index" class="feature-tag">
+            {{ feature }}
+            <button type="button" (click)="removeFeature(i)">&times;</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group-checkbox">
+        <input type="checkbox" id="isFeatured" name="isFeatured" [(ngModel)]="currentProperty.isFeatured">
+        <label for="isFeatured">Marcar como Propiedad Destacada</label>
+      </div>
+
+      <!-- Sección de Subida de Imágenes -->
+      <div class="form-group">
+        <label>Imágenes</label>
+        <input type="file" multiple (change)="onFileSelected($event)" accept="image/*" class="file-input">
+
+        <!-- Previsualización de nuevas imágenes -->
+        <div class="image-preview-container" *ngIf="newImagePreviews.length > 0">
+          <div *ngFor="let preview of newImagePreviews; let i = index" class="image-preview-item">
+            <img [src]="preview" alt="Previsualización de imagen">
+            <button type="button" class="btn-remove-image" (click)="removeNewImage(i)">&times;</button>
+          </div>
+        </div>
+
+        <!-- Galería de imágenes existentes (en modo edición) -->
+        <div class="image-preview-container" *ngIf="isEditing && currentProperty.images?.length > 0">
+          <div *ngFor="let image of currentProperty.images" class="image-preview-item">
+            <img [src]="'data:' + image.contentType + ';base64,' + image.data" [alt]="image.name">
+            <button type="button" class="btn-remove-image" (click)="removeExistingImage(image.id)">&times;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success" [disabled]="!isFormValid(currentProperty) || isSaving">
+          <span *ngIf="!isSaving">Guardar</span>
+          <span *ngIf="isSaving" class="saving-indicator">
+            <span class="spinner-small"></span> Guardando...
+          </span>
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="onCancelEdit()" [disabled]="isSaving">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Indicador de Carga -->
+  <div class="loading-indicator" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Cargando inventario...</p>
+  </div>
+
+  <!-- Tabla -->
+  <div class="properties-table-card" *ngIf="!isLoading && !isCreating && !isEditing">
+    <div class="table-header">
+      <h2>Inventario</h2>
+      <div class="table-actions">
+        <button class="btn btn-danger" (click)="onDeleteSelected()" *ngIf="selectedPropertyIds.size >= 2">
+          <i class="material-icons">delete</i> Eliminar Seleccionados ({{ selectedPropertyIds.size }})
+        </button>
+        <button class="btn btn-secondary" (click)="generateReport('pdf')" [disabled]="isGeneratingReport">
+          <i class="material-icons">picture_as_pdf</i> Exportar a PDF
+        </button>
+        <button class="btn btn-success" (click)="generateReport('xls')" [disabled]="isGeneratingReport" *ngIf="authService.hasRole('ROOT')">
+          <i class="material-icons">table_chart</i> Exportar a XLS
+        </button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox" [checked]="areAllSelected()" (change)="toggleAllSelection($event)">
+            </th>
+            <th>Título</th>
+            <th>Ubicación</th>
+            <th>Precio</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Características</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let property of filteredProperties">
+            <td>
+              <input type="checkbox" [checked]="isSelected(property.id)" (change)="toggleSelection(property.id)">
+            </td>
+            <td>{{ property.title }}</td>
+            <td>{{ property.location }}</td>
+            <td>{{ property.price | currency }}</td>
+            <td>{{ property.type }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="property.status.toLowerCase().replace(' ', '-')">
+                {{ property.status }}
+              </span>
+            </td>
+            <td>{{ property.beds }} Hab | {{ property.baths }} Baños | {{ property.area }} m²</td>
+            <td class="actions-column">
+              <button class="btn btn-edit" (click)="onEditProperty(property)"><i class="material-icons">edit</i></button>
+              <button class="btn btn-delete" (click)="onDeleteProperty(property.id)"><i class="material-icons">delete</i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  [isOpen]="showDeleteModal"
+  [isLoading]="isDeleting"
+  title="Confirmar Eliminación"
+  message="¿Está seguro de que desea eliminar esta propiedad? Esta acción es irreversible."
+  confirmText="Sí, eliminar"
+  cancelText="Cancelar"
+  type="danger"
+  (confirm)="onConfirmDelete()"
+  (cancel)="onCancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [isOpen]="showDeleteSelectedModal"
+  [isLoading]="isDeleting"
+  title="Confirmar Eliminación Múltiple"
+  [message]="'¿Está seguro de que desea eliminar las ' + selectedPropertyIds.size + ' propiedades seleccionadas? Esta acción es irreversible.'"
+  confirmText="Sí, eliminar seleccionados"
+  cancelText="Cancelar"
+  type="danger"
+  (confirm)="onConfirmDeleteSelected()"
+  (cancel)="showDeleteSelectedModal = false">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [isOpen]="showDeleteAllModal"
+  [isLoading]="isDeleting"
+  title="Confirmar Eliminación Masiva"
+  message="¿Está seguro de que desea eliminar TODAS las propiedades? Esta acción es irreversible y no se puede deshacer."
+  confirmText="Sí, eliminar todo"
+  cancelText="Cancelar"
+  type="danger"
+  (confirm)="onConfirmDeleteAll()"
+  (cancel)="showDeleteAllModal = false">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [isOpen]="showSaveSuccessModal"
+  title="Operación Exitosa"
+  [message]="successMessage ?? ''"
+  confirmText="Aceptar"
+  type="success"
+  (confirm)="showSaveSuccessModal = false">
+</app-confirmation-modal>

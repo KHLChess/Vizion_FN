@@ -1,0 +1,182 @@
+<div class="user-management-container">
+  <div class="header-section">
+    <h1>Gestión de Usuarios</h1>
+    <div class="search-bar" *ngIf="!isCreating && !isEditing">
+      <i class="material-icons">search</i>
+      <input type="text" placeholder="Buscar por usuario o email..." [(ngModel)]="searchTerm" (input)="filterUsers()">
+    </div>
+    <div class="header-actions" *ngIf="!isCreating && !isEditing">
+      <button class="btn btn-primary" (click)="onAddUser()">
+        <i class="material-icons">person_add</i> Añadir Nuevo Usuario
+      </button>
+      <button class="btn btn-danger" (click)="onDeleteAllUsers()" *ngIf="users.length > 0">
+        <i class="material-icons">delete_sweep</i> Eliminar Lista
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage && (!isCreating && !isEditing)" class="alert alert-success">{{ successMessage }}</div>
+
+  <!-- Formulario de Creación/Edición de Usuario -->
+  <div class="user-form-card" *ngIf="isCreating || isEditing">
+    <h2>{{ isCreating ? 'Crear Nuevo Usuario' : 'Editar Usuario' }}</h2>
+    <p class="form-note">Los campos marcados con <span class="required-asterisk">*</span> son obligatorios.</p>
+    <form (ngSubmit)="onSaveUser()">
+      <div class="form-group">
+        <label for="fullName">Nombre Completo <span class="required-asterisk">*</span></label>
+        <input type="text" id="fullName" name="fullName"
+               [ngModel]="isCreating ? newUser.fullName : selectedUser.fullName"
+               (ngModelChange)="isCreating ? newUser.fullName = $event : selectedUser.fullName = $event" required>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Nombre de Usuario <span class="required-asterisk">*</span></label>
+        <input type="text" id="username" name="username"
+               [ngModel]="isCreating ? newUser.username : selectedUser.username"
+               (ngModelChange)="onUsernameChange($event)" required>
+        <div *ngIf="usernameAvailability === false" class="validation-error">Este nombre de usuario ya está en uso.</div>
+        <div *ngIf="usernameAvailability === true" class="validation-success">Nombre de usuario disponible.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo Electrónico <span class="required-asterisk">*</span></label>
+        <input type="email" id="email" name="email" #emailInput="ngModel"
+               [ngModel]="isCreating ? newUser.email : selectedUser.email"
+               (ngModelChange)="onEmailChange($event)" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$">
+        <div *ngIf="emailAvailability === false" class="validation-error">Este correo electrónico ya está en uso.</div>
+        <div *ngIf="emailAvailability === true" class="validation-success">Correo electrónico disponible.</div>
+        <div *ngIf="emailInput.errors?.['pattern']" class="validation-error">El formato del correo electrónico no es válido.</div>
+      </div>
+
+      <div class="form-group" *ngIf="isCreating && newUser.role !== 'REFERIDO'">
+        <label for="password">Contraseña (Inicial) <span class="required-asterisk">*</span></label>
+        <input type="password" id="password" name="password" [(ngModel)]="newUser.password" required>
+      </div>
+
+      <div class="form-group" *ngIf="isEditing && originalUser.role === 'REFERIDO' && selectedUser.role !== 'REFERIDO'">
+        <label for="newPassword">Asignar Contraseña para Nuevo Rol <span class="required-asterisk">*</span></label>
+        <input type="password" id="newPassword" name="newPassword" [(ngModel)]="selectedUser.password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Rol <span class="required-asterisk">*</span></label>
+        <select id="role" name="role"
+                [ngModel]="isCreating ? newUser.role : selectedUser.role"
+                (ngModelChange)="onRoleChange($event)" required>
+          <option *ngFor="let role of availableRoles" [value]="role">{{ role | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="isCreating && newUser.role === 'CLIENT'">
+        <label for="managedBy">Gestionado Por <span class="required-asterisk">*</span></label>
+        <select id="managedBy" name="managedById"
+                [(ngModel)]="newUser.managedById" required>
+          <option [ngValue]="null" disabled>Seleccione un gestor...</option>
+          <option *ngFor="let manager of managableUsers" [value]="manager.id">
+            {{ manager.fullName }} ({{ manager.role | titlecase }})
+          </option>
+        </select>
+        <div *ngIf="managableUsers.length === 0" class="validation-error">
+          No hay gestores disponibles para asignar. No se puede crear un cliente.
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="(isCreating ? newUser.role : selectedUser.role) === 'REFERIDO'">
+        <label for="referrer">Referido Por <span class="required-asterisk">*</span></label>
+        <select id="referrer" name="referrerId"
+                [ngModel]="isCreating ? newUser.referrerId : selectedUser.referrerId"
+                (ngModelChange)="isCreating ? newUser.referrerId = $event : selectedUser.referrerId = $event" required>
+          <option [ngValue]="null" disabled>Seleccione un referente...</option>
+          <option *ngFor="let user of potentialReferrers" [value]="user.id">
+            {{ user.fullName }} ({{ user.role | titlecase }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success" [disabled]="!isFormValid()">Guardar</button>
+        <button type="button" class="btn btn-secondary" (click)="onCancelEdit()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="users-table-card" *ngIf="!isCreating && !isEditing">
+    <!-- Nuevo contenedor para el encabezado de la tabla -->
+    <div class="table-header">
+      <h2>Usuarios Registrados</h2>
+      <button class="btn btn-danger" (click)="onDeleteSelected()" *ngIf="selectedUserIds.size >= 2">
+        <i class="material-icons">delete</i> Eliminar Seleccionados ({{ selectedUserIds.size }})
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox" [checked]="areAllSelected()" (change)="toggleAllSelection($event)">
+            </th>
+            <!-- Columna ID ELIMINADA -->
+            <th>Nombre Completo</th><th>Email</th><th>Usuario</th><th>Rol</th><th>Referente</th><th>Gestionado Por</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers">
+            <td>
+              <input type="checkbox" [checked]="isSelected(user.id)" (change)="toggleSelection(user.id)">
+            </td>
+            <!-- Celda ID ELIMINADA -->
+            <td>{{ user.fullName }}</td><td>{{ user.email }}</td><td>{{ user.username }}</td><td>{{ user.role | titlecase }}</td><td>{{ user.referrer?.fullName || 'N/A' }}</td><td>{{ user.managedBy?.fullName || 'N/A' }}</td>
+            <td class="actions-column">
+              <button class="btn btn-edit" (click)="onEditUser(user)"><i class="material-icons">edit</i></button>
+              <button class="btn btn-delete" (click)="onDeleteUser(user.id)"><i class="material-icons">delete</i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modales -->
+<app-confirmation-modal [isOpen]="showDeleteModal" title="Confirmar Eliminación" message="¿Está seguro de que desea eliminar este usuario? Esta acción es irreversible." confirmText="Sí, eliminar" cancelText="Cancelar" type="danger" (confirm)="onConfirmDelete()" (cancel)="onCancelDelete()"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showDeleteAllModal" title="Confirmar Eliminación Masiva" message="¿Está seguro de que desea eliminar TODOS los usuarios (excepto ROOT)? Esta acción es irreversible." confirmText="Sí, eliminar todos" cancelText="Cancelar" type="danger" (confirm)="onConfirmDeleteAll()" (cancel)="showDeleteAllModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showDeleteSelectedModal" title="Confirmar Eliminación Múltiple" message="¿Está seguro de que desea eliminar los {{ selectedUserIds.size }} usuarios seleccionados? Esta acción es irreversible." confirmText="Sí, eliminar seleccionados" cancelText="Cancelar" type="danger" (confirm)="onConfirmDeleteSelected()" (cancel)="showDeleteSelectedModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showCreateSuccessModal" title="Usuario Creado" message="El nuevo usuario ha sido creado exitosamente." confirmText="Aceptar" type="success" (confirm)="showCreateSuccessModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showUpdateSuccessModal" title="Usuario Actualizado" message="El usuario ha sido actualizado exitosamente." confirmText="Aceptar" type="success" (confirm)="showUpdateSuccessModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showReassignmentSuccessModal" title="Degradación Completada" message="El usuario ha sido degradado y sus clientes han sido reasignados a {{ newManagerName }}." confirmText="Aceptar" type="success" (confirm)="showReassignmentSuccessModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showPromotionSuccessModal" title="Promoción Exitosa" message="El usuario {{ promotedUserName }} ha sido promovido. Sus referidos ahora son sus clientes." confirmText="Aceptar" type="success" (confirm)="showPromotionSuccessModal = false"></app-confirmation-modal>
+
+<!-- Modales de éxito de eliminación -->
+<app-confirmation-modal [isOpen]="showDeleteSuccessModal" title="Usuario Eliminado" message="El usuario ha sido eliminado exitosamente." confirmText="Aceptar" type="success" (confirm)="showDeleteSuccessModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showDeleteSelectedSuccessModal" title="Eliminación Múltiple Completada" message="Los usuarios seleccionados han sido eliminados exitosamente." confirmText="Aceptar" type="success" (confirm)="showDeleteSelectedSuccessModal = false"></app-confirmation-modal>
+<app-confirmation-modal [isOpen]="showDeleteAllSuccessModal" title="Eliminación Masiva Completada" message="Todos los usuarios (excepto ROOT) han sido eliminados exitosamente." confirmText="Aceptar" type="success" (confirm)="showDeleteAllSuccessModal = false"></app-confirmation-modal>
+
+<div class="modal-overlay" *ngIf="showReassignmentModal">
+  <div class="modal-container modal-warning">
+    <div class="modal-header"><i class="material-icons modal-icon">warning</i><h3>Reasignación de Clientes Requerida</h3></div>
+    <div class="modal-body">
+      <p>El usuario <strong>{{ userToReassign?.fullName }}</strong> será degradado a CLIENTE. Los siguientes <strong>{{ orphanedClients.length }}</strong> clientes deben ser reasignados:</p>
+      <ul class="client-list" *ngIf="orphanedClients.length > 0"><li *ngFor="let client of orphanedClients">{{ client.fullName }}</li></ul>
+      <p *ngIf="orphanedClients.length === 0">Este gestor no tiene clientes a su cargo.</p>
+      <div class="form-group">
+        <label for="newManager"><strong>Seleccione el nuevo gestor:</strong></label>
+        <select id="newManager" name="newManagerId" [(ngModel)]="newManagerId" class="form-control">
+          <option [ngValue]="null" disabled>Seleccione un gestor...</option>
+          <option *ngFor="let manager of availableReassignmentManagers" [value]="manager.id">{{ manager.fullName }} ({{ manager.role | titlecase }})</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onCancelReassignment()">Cancelar</button>
+      <button class="btn btn-confirm" (click)="onConfirmReassignment()" [disabled]="!newManagerId || isReassigning">
+        <span *ngIf="!isReassigning">Confirmar Traspaso</span>
+        <span *ngIf="isReassigning" class="saving-indicator">
+          <span class="spinner-small"></span> Reasignando...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

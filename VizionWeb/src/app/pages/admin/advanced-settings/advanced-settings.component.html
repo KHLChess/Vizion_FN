@@ -1,0 +1,38 @@
+<div class="advanced-settings-container">
+  <div class="header-section">
+    <h1>Configuración Avanzada</h1>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+  <div class="settings-card">
+    <div class="settings-category">
+      <h2>Base de Datos</h2>
+      <div class="setting-item">
+        <div class="setting-info">
+          <label>Respaldo de Base de Datos</label>
+          <p class="setting-key">Genera y descarga un respaldo completo de la base de datos en formato .sql.</p>
+        </div>
+        <div class="setting-input">
+          <button type="button" class="btn btn-primary" (click)="downloadBackup()" [disabled]="isDownloadingBackup">
+            <span *ngIf="!isDownloadingBackup">Generar y Descargar Respaldo</span>
+            <span *ngIf="isDownloadingBackup" class="saving-indicator">
+              <span class="spinner-small"></span> Generando...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Respaldo Exitoso -->
+<app-confirmation-modal
+  [isOpen]="showBackupSuccessModal"
+  title="Respaldo Generado"
+  message="El respaldo de la base de datos se ha generado y descargado exitosamente."
+  confirmText="Aceptar"
+  type="success"
+  (confirm)="closeBackupSuccessModal()">
+</app-confirmation-modal>

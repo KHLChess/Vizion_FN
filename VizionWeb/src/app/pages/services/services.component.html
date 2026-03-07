@@ -1,0 +1,83 @@
+<div class="services-header">
+  <div class="container">
+    <h1>Nuestros Servicios</h1>
+    <p>Más que construcción, ofrecemos un ecosistema integral de inversión y desarrollo.</p>
+  </div>
+</div>
+
+<div class="container services-container">
+
+  <!-- Service 1: Tech Platform -->
+  <section class="service-detail reverse">
+    <div class="detail-content animate-slide-up">
+      <div class="icon-box">
+        <i class="material-icons">hub</i>
+      </div>
+      <h2>Ecosistema Digital Cosma</h2>
+      <p class="lead">El futuro de los bienes raíces es digital. Estamos desarrollando una plataforma exclusiva para nuestros clientes.</p>
+      <p>Próximamente, tendrás acceso a un <strong>Web Service</strong> integral donde podrás:</p>
+      <ul class="feature-list">
+        <li><i class="material-icons">check_circle</i> Monitorear el avance de obra en tiempo real.</li>
+        <li><i class="material-icons">check_circle</i> Gestionar pagos y facturación digital.</li>
+        <li><i class="material-icons">check_circle</i> Acceder a documentación legal y planos.</li>
+        <li><i class="material-icons">check_circle</i> Solicitar mantenimiento post-venta.</li>
+      </ul>
+
+      <!-- Botón de Iniciar Sesión (visible solo si NO está logueado) -->
+      <div class="auth-section">
+        <button *ngIf="!isLoggedIn()" class="cta-button" (click)="onLoginClick()">Iniciar Sesión</button>
+        <!-- El botón "Cerrar Sesión" ha sido eliminado de aquí para evitar redundancia con la navbar -->
+      </div>
+
+    </div>
+    <div class="detail-image animate-fade-in">
+      <!-- IMAGEN DE EJEMPLO: Reemplazar con una imagen real de tecnología -->
+      <img [src]="serviceImage1" alt="Ecosistema Digital Cosma">
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Service 2: Architecture -->
+  <section class="service-detail">
+    <div class="detail-content animate-slide-up">
+      <div class="icon-box">
+        <i class="material-icons">architecture</i>
+      </div>
+      <h2>Arquitectura Viva & Sostenible</h2>
+      <p>Diseñamos espacios que respiran. Nuestra filosofía se basa en la integración del entorno natural con la funcionalidad moderna.</p>
+      <p>Utilizamos materiales de alta gama y técnicas de eficiencia energética para garantizar que su inversión no solo sea bella, sino inteligente y duradera.</p>
+    </div>
+    <div class="detail-image animate-fade-in">
+      <!-- IMAGEN DE EJEMPLO: Reemplazar con una imagen real de arquitectura sostenible -->
+      <img [src]="serviceImage2" alt="Arquitectura Viva y Sostenible">
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Service 3: Construction -->
+  <section class="service-detail reverse">
+    <div class="detail-content animate-slide-up">
+      <div class="icon-box">
+        <i class="material-icons">apartment</i>
+      </div>
+      <h2>Desarrollo Integral "Llave en Mano"</h2>
+      <p>Nos encargamos de todo. Desde la conceptualización y los permisos legales, hasta la construcción y los acabados finales.</p>
+      <p>Usted recibe su propiedad lista para habitar, con la garantía de calidad Cosma y el respaldo de un equipo de ingenieros expertos.</p>
+    </div>
+    <div class="detail-image animate-fade-in">
+      <!-- IMAGEN DE EJEMPLO: Reemplazar con una imagen real de construcción "llave en mano" -->
+      <img [src]="serviceImage3" alt="Desarrollo Integral Llave en Mano">
+    </div>
+  </section>
+
+</div>
+
+<section class="cta-section">
+  <div class="container">
+    <h2>¿Tiene un proyecto en mente?</h2>
+    <p>Hablemos sobre cómo podemos hacerlo realidad con la tecnología y experiencia de Cosma.</p>
+    <button class="cta-button-secondary" routerLink="/contacto">Iniciar Proyecto</button>
+  </div>
+</section>

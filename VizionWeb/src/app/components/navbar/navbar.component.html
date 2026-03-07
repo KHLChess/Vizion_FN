@@ -1,0 +1,103 @@
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="container navbar-container">
+    <a routerLink="/" class="navbar-brand">
+      <span class="brand-text">COSMA</span>
+    </a>
+
+    <!-- Menú Público (No logueado) -->
+    <ng-container *ngIf="!isLoggedIn()">
+      <button class="navbar-toggler" (click)="toggleMenu()" aria-label="Toggle navigation">
+        <span class="toggler-icon"></span>
+        <span class="toggler-icon"></span>
+        <span class="toggler-icon"></span>
+      </button>
+      <div class="navbar-menu navbar-menu-public" [class.active]="isMenuOpen">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/propiedades" routerLinkActive="active" (click)="closeMenu()">Propiedades</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/servicios" routerLinkActive="active" (click)="closeMenu()">Servicios</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/nosotros" routerLinkActive="active" (click)="closeMenu()">Nosotros</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/contacto" routerLinkActive="active" (click)="closeMenu()">Contacto</a>
+          </li>
+        </ul>
+      </div>
+    </ng-container>
+
+    <!-- Menú de Usuario Autenticado (Hamburguesa) -->
+    <ng-container *ngIf="isLoggedIn()">
+      <button class="navbar-toggler navbar-toggler-authenticated" (click)="toggleMenu()" aria-label="Toggle navigation">
+        <span class="toggler-icon"></span>
+        <span class="toggler-icon"></span>
+        <span class="toggler-icon"></span>
+      </button>
+      <div class="navbar-menu navbar-menu-authenticated" [class.active]="isMenuOpen">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Mi Panel</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/dashboard/profile" routerLinkActive="active" (click)="closeMenu()">Mi Perfil</a>
+          </li>
+
+          <!-- Opciones específicas para ROOT -->
+          <ng-container *ngIf="getUserRole() === 'ROOT'">
+            <li class="nav-item"><a routerLink="/admin/users" (click)="closeMenu()">Gestionar Usuarios</a></li>
+            <li class="nav-item"><a routerLink="/admin/properties" (click)="closeMenu()">Gestionar Propiedades</a></li>
+            <li class="nav-item"><a routerLink="/admin/commissions" (click)="closeMenu()">Gestionar Comisiones</a></li>
+            <li class="nav-item"><a routerLink="/admin/settings" (click)="closeMenu()">Configuración del Sistema</a></li>
+          </ng-container>
+
+          <!-- Opciones específicas para OWNER -->
+          <ng-container *ngIf="getUserRole() === 'OWNER'">
+            <li class="nav-item"><a routerLink="/owner/team" (click)="closeMenu()">Gestionar Equipo</a></li>
+            <li class="nav-item"><a routerLink="/owner/properties" (click)="closeMenu()">Ver Propiedades</a></li>
+            <li class="nav-item"><a routerLink="/owner/commissions" (click)="closeMenu()">Autorizar Comisiones</a></li>
+            <li class="nav-item"><a routerLink="/owner/reports" (click)="closeMenu()">Reportes de Ventas</a></li>
+          </ng-container>
+
+          <!-- Opciones específicas para MANAGER -->
+          <ng-container *ngIf="getUserRole() === 'MANAGER'">
+            <li class="nav-item"><a routerLink="/manager/sellers" (click)="closeMenu()">Gestionar Vendedores</a></li>
+            <li class="nav-item"><a routerLink="/manager/clients" (click)="closeMenu()">Gestionar Clientes</a></li>
+            <li class="nav-item"><a routerLink="/manager/properties" (click)="closeMenu()">Asignar Propiedades</a></li>
+            <li class="nav-item"><a routerLink="/manager/performance" (click)="closeMenu()">Reportes Equipo</a></li>
+          </ng-container>
+
+          <!-- Opciones específicas para SELLER -->
+          <ng-container *ngIf="getUserRole() === 'SELLER'">
+            <li class="nav-item"><a routerLink="/seller/clients" (click)="closeMenu()">Mis Clientes</a></li>
+            <li class="nav-item"><a routerLink="/seller/properties" (click)="closeMenu()">Mis Propiedades</a></li>
+            <li class="nav-item"><a routerLink="/seller/sales" (click)="closeMenu()">Mis Ventas</a></li>
+            <li class="nav-item"><a routerLink="/seller/referrals" (click)="closeMenu()">Mis Referidos</a></li>
+          </ng-container>
+
+          <!-- Opciones específicas para CLIENT -->
+          <ng-container *ngIf="getUserRole() === 'CLIENT'">
+            <li class="nav-item"><a routerLink="/client/my-properties" (click)="closeMenu()">Mis Propiedades</a></li>
+            <li class="nav-item"><a routerLink="/client/purchases" (click)="closeMenu()">Historial de Compras</a></li>
+            <li class="nav-item"><a routerLink="/client/referrals" (click)="closeMenu()">Mis Referidos</a></li>
+          </ng-container>
+
+          <li class="nav-item" *ngIf="getUserRole() === 'ROOT'">
+            <a routerLink="/dashboard/settings" routerLinkActive="active" (click)="closeMenu()">Configuración Avanzada</a>
+          </li>
+          <li class="nav-item">
+            <a (click)="onLogout(); closeMenu()">Cerrar Sesión</a>
+          </li>
+          <li class="nav-item" *ngIf="getUserRole() !== 'ROOT'">
+            <a (click)="onDeleteAccount(); closeMenu()">Cerrar Cuenta</a>
+          </li>
+        </ul>
+      </div>
+    </ng-container>
+  </div>
+</nav>
