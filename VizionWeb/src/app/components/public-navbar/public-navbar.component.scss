@@ -1,0 +1,140 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: transparent;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  padding: 1rem 0;
+}
+
+.navbar.scrolled {
+  background-color: var(--cosma-primary);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  text-decoration: none;
+  color: var(--cosma-text-light);
+  font-family: var(--font-family-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+  color: var(--cosma-secondary);
+}
+
+/* Estilos para el botón hamburguesa */
+.navbar-toggler {
+  display: none; /* Oculto por defecto en escritorio */
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggler-icon {
+  width: 100%;
+  height: 3px;
+  background-color: var(--cosma-text-light);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Estilos para el menú público */
+.navbar-menu-public {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* Espacio entre elementos del menú público en escritorio */
+}
+
+.navbar-menu-public .navbar-nav {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-menu-public .nav-item a {
+  text-decoration: none;
+  color: var(--cosma-text-light);
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.navbar-menu-public .nav-item a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--cosma-secondary);
+  transition: width 0.3s ease;
+}
+
+.navbar-menu-public .nav-item a:hover::after,
+.navbar-menu-public .nav-item a.active::after {
+  width: 100%;
+}
+
+.navbar-menu-public .nav-item a:hover,
+.navbar-menu-public .nav-item a.active {
+  color: var(--cosma-secondary);
+}
+
+/* Responsive para el menú público */
+@media (max-width: 768px) {
+  .navbar-toggler {
+    display: flex; /* Mostrar toggler en móvil */
+  }
+
+  .navbar-menu-public {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--cosma-primary);
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0;
+    gap: 1.5rem;
+    transform: translateY(-150%); /* Oculto por defecto */
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+  }
+
+  .navbar-menu-public.active {
+    transform: translateY(0); /* Visible cuando está activo */
+  }
+
+  .navbar-menu-public .navbar-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .navbar-menu-public .nav-item a {
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,104 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: var(--cosma-primary); /* Siempre con fondo sólido */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Siempre con sombra */
+  padding: 1rem 0;
+  /* Eliminada la transición de background-color ya que no reacciona al scroll */
+}
+
+/* Eliminada la regla .navbar.scrolled ya que no se usará */
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  text-decoration: none;
+  color: var(--cosma-text-light);
+  font-family: var(--font-family-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+  color: var(--cosma-secondary);
+}
+
+/* El toggler para el menú autenticado siempre debe ser visible */
+.navbar-toggler {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggler-icon {
+  width: 100%;
+  height: 3px;
+  background-color: var(--cosma-text-light);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.navbar-menu {
+  position: absolute;
+  top: 100%;
+  right: 0; /* Alineado a la derecha */
+  width: 250px; /* Ancho fijo para el menú lateral */
+  background-color: var(--cosma-primary);
+  flex-direction: column;
+  align-items: flex-start; /* Alinear elementos a la izquierda */
+  padding: 1rem 0;
+  gap: 0.5rem;
+  transform: translateX(100%); /* Oculto a la derecha por defecto */
+  transition: transform 0.3s ease-in-out;
+  box-shadow: -4px 0 6px rgba(0, 0, 0, 0.1); /* Sombra lateral */
+  z-index: 999;
+  display: flex; /* Asegurar que el contenedor flex exista */
+}
+
+.navbar-menu.active {
+  transform: translateX(0); /* Visible cuando está activo */
+}
+
+.navbar-nav {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinear elementos a la izquierda */
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  width: 100%;
+}
+
+.nav-item a {
+  padding: 10px 20px;
+  display: block;
+  color: var(--cosma-text-light);
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.nav-item a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--cosma-secondary);
+}

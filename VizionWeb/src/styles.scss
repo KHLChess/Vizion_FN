@@ -1,0 +1,73 @@
+/* Global Styles for Cosma Real Estate */
+
+:root {
+  /* Primary Colors - Elegant & Professional */
+  --cosma-primary: #1A365D; /* Deep Navy Blue - Trust & Stability */
+  --cosma-secondary: #C5A059; /* Gold/Bronze - Luxury & Quality */
+  --cosma-accent: #E53E3E; /* Subtle Red Accent - Call to Action */
+
+  /* Neutral Colors */
+  --cosma-bg-light: #F7FAFC; /* Off-white background */
+  --cosma-text-dark: #2D3748; /* Dark Grey for text */
+  --cosma-text-light: #FFFFFF; /* White text */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-serif: 'Playfair Display', Georgia, "Times New Roman", serif; /* For headings to add elegance */
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  background-color: var(--cosma-bg-light);
+  color: var(--cosma-text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Estilos para centrar el contenido principal, especialmente útil para el login */
+  display: flex;
+  flex-direction: column; /* Asegura que los elementos se apilen verticalmente */
+  min-height: 100vh; /* Ocupa al menos el 100% de la altura de la ventana */
+}
+
+/* Asegura que el router-outlet ocupe el espacio restante y permita centrar */
+app-root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Estilos específicos para la página de login para centrar el formulario */
+body.login-page {
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #6dd5ed, #2193b0); /* Fondo degradado para el login */
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-serif);
+  color: var(--cosma-primary);
+  margin-top: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-family-sans);
+}
+
+/* Utility Classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.text-primary { color: var(--cosma-primary); }
+.text-secondary { color: var(--cosma-secondary); }
+.bg-primary { background-color: var(--cosma-primary); color: var(--cosma-text-light); }
+.bg-secondary { background-color: var(--cosma-secondary); color: var(--cosma-text-light); }

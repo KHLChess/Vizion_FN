@@ -1,0 +1,113 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <!-- Muestra la foto de perfil del usuario o un placeholder -->
+        <img [src]="profilePicturePreviewUrl || 'https://via.placeholder.com/150/007bff/ffffff?text=JD'" alt="Foto de Perfil">
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" *ngIf="isEditing" class="file-input" id="file-upload">
+        <label for="file-upload" class="file-input-label" *ngIf="isEditing">
+          <i class="material-icons">photo_camera</i> Cambiar Foto
+        </label>
+      </div>
+      <h2>Mi Perfil</h2>
+      <p class="role-tag">{{ user.role | titlecase }}</p>
+    </div>
+
+    <div class="profile-body">
+      <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+      <form (ngSubmit)="onSave()" #profileForm="ngForm">
+        <div class="form-group">
+          <label for="fullName">Nombre Completo</label>
+          <input type="text" id="fullName" name="fullName" [(ngModel)]="user.fullName" [readonly]="!isEditing" required>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Nombre de Usuario</label>
+          <input type="text" id="username" name="username" [(ngModel)]="user.username" [readonly]="!isEditing" required (ngModelChange)="onUsernameChange($event)">
+          <div *ngIf="isEditing && usernameAvailability === false" class="validation-error">
+            Este nombre de usuario ya está en uso.
+          </div>
+          <div *ngIf="isEditing && usernameAvailability === true && user.username !== originalUser.username" class="validation-success">
+            Nombre de usuario disponible.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input type="email" id="email" name="email" [(ngModel)]="user.email" [readonly]="!isEditing" required (ngModelChange)="onEmailChange($event)">
+          <div *ngIf="isEditing && emailAvailability === false" class="validation-error">
+            Este correo electrónico ya está en uso.
+          </div>
+          <div *ngIf="isEditing && emailAvailability === true && user.email !== originalUser.email" class="validation-success">
+            Correo electrónico disponible.
+          </div>
+        </div>
+
+        <!-- Checkbox para habilitar cambio de contraseña -->
+        <div class="form-group password-change-toggle" *ngIf="isEditing">
+          <input type="checkbox" id="enablePasswordChange" name="enablePasswordChange" [(ngModel)]="enablePasswordChange" (change)="resetPasswordFields()">
+          <label for="enablePasswordChange">Habilitar cambio de contraseña</label>
+        </div>
+
+        <!-- Campos de cambio de contraseña (visibles si el checkbox está marcado) -->
+        <ng-container *ngIf="isEditing && enablePasswordChange">
+          <div class="form-group">
+            <label for="currentPassword">Contraseña Actual</label>
+            <input type="password" id="currentPassword" name="currentPassword" [(ngModel)]="currentPassword" required (ngModelChange)="onCurrentPasswordChange($event)">
+            <i class="material-icons validation-icon" [class.valid]="currentPasswordValid === true" [class.invalid]="currentPasswordValid === false">
+              {{ currentPasswordValid === true ? 'check_circle' : (currentPasswordValid === false ? 'cancel' : '') }}
+            </i>
+            <div *ngIf="currentPasswordValid === false" class="validation-error">
+              Contraseña actual incorrecta.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword">Nueva Contraseña</label>
+            <input type="password" id="newPassword" name="newPassword" [(ngModel)]="newPassword" required (ngModelChange)="onNewPasswordChange($event)">
+            <i class="material-icons validation-icon" [class.valid]="newPasswordDifferent === true && newPasswordLengthValid === true" [class.invalid]="newPasswordDifferent === false || newPasswordLengthValid === false">
+              {{ (newPasswordDifferent === true && newPasswordLengthValid === true) ? 'check_circle' : ((newPasswordDifferent === false || newPasswordLengthValid === false) ? 'cancel' : '') }}
+            </i>
+            <div *ngIf="newPasswordDifferent === false && newPassword" class="validation-error">
+              La nueva contraseña debe ser diferente a la actual.
+            </div>
+            <div *ngIf="newPasswordLengthValid === false && newPassword" class="validation-error">
+              La nueva contraseña debe tener al menos 6 caracteres.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirmar Contraseña</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required (ngModelChange)="onConfirmPasswordChange($event)">
+            <i class="material-icons validation-icon" [class.valid]="passwordsMatch === true" [class.invalid]="passwordsMatch === false">
+              {{ passwordsMatch === true ? 'check_circle' : (passwordsMatch === false ? 'cancel' : '') }}
+            </i>
+            <div *ngIf="passwordsMatch === false && confirmPassword" class="validation-error">
+              Las contraseñas no coinciden.
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="profile-actions">
+          <button type="button" class="btn btn-primary" *ngIf="!isEditing" (click)="onEdit()">Editar Perfil</button>
+          <button type="submit" class="btn btn-success" *ngIf="isEditing" [disabled]="!profileForm.form.valid || usernameAvailability === false || emailAvailability === false || (enablePasswordChange && (!currentPasswordValid || !newPasswordDifferent || !passwordsMatch || !newPassword || newPassword.length < 6))">Guardar Cambios</button>
+          <button type="button" class="btn btn-secondary" *ngIf="isEditing" (click)="onCancel()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación para cambio de email -->
+<app-confirmation-modal
+  [isOpen]="showEmailChangeModal"
+  title="Cambio de Correo Electrónico"
+  message="Ha cambiado su dirección de correo electrónico. Deberá volver a iniciar sesión con el nuevo correo. ¿Desea continuar?"
+  confirmText="Sí, cambiar y salir"
+  cancelText="Cancelar"
+  type="warning"
+  (confirm)="onConfirmEmailChange()"
+  (cancel)="onCancelEmailChange()">
+</app-confirmation-modal>

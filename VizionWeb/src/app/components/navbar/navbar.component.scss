@@ -1,0 +1,212 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: transparent;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  padding: 1rem 0;
+}
+
+.navbar.scrolled {
+  background-color: var(--cosma-primary);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  text-decoration: none;
+  color: var(--cosma-text-light);
+  font-family: var(--font-family-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+  color: var(--cosma-secondary);
+}
+
+/* Estilos base para el botón hamburguesa */
+.navbar-toggler {
+  display: none; /* Oculto por defecto, se mostrará con media queries o clases específicas */
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggler-icon {
+  width: 100%;
+  height: 3px;
+  background-color: var(--cosma-text-light);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Estilos base para los elementos de navegación */
+.navbar-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item a {
+  text-decoration: none;
+  color: var(--cosma-text-light);
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.nav-item a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--cosma-secondary);
+  transition: width 0.3s ease;
+}
+
+.nav-item a:hover::after,
+.nav-item a.active::after {
+  width: 100%;
+}
+
+.nav-item a:hover,
+.nav-item a.active {
+  color: var(--cosma-secondary);
+}
+
+/* --- Menú Público (No logueado) --- */
+/* Escritorio: Horizontal */
+@media (min-width: 769px) {
+  .navbar-menu-public {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: static; /* No absoluto */
+    transform: none; /* No transformado */
+    flex-direction: row; /* Horizontal */
+    padding: 0;
+    box-shadow: none;
+    width: auto;
+  }
+  .navbar-menu-public .navbar-nav {
+    flex-direction: row; /* Horizontal */
+    gap: 1.5rem;
+  }
+  .navbar-menu-public .nav-item a {
+    font-size: 1rem;
+    padding: 0;
+  }
+  /* Ocultar el toggler para el menú público en escritorio */
+  .navbar-toggler:not(.navbar-toggler-authenticated) {
+    display: none;
+  }
+}
+
+/* Móvil: Hamburguesa */
+@media (max-width: 768px) {
+  .navbar-menu-public {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--cosma-primary);
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0;
+    gap: 1.5rem;
+    transform: translateY(-150%); /* Oculto por defecto */
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+  }
+  .navbar-menu-public.active {
+    transform: translateY(0); /* Visible cuando está activo */
+  }
+  .navbar-menu-public .navbar-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .navbar-menu-public .nav-item a {
+    font-size: 1.2rem;
+  }
+  /* Mostrar el toggler para el menú público en móvil */
+  .navbar-toggler:not(.navbar-toggler-authenticated) {
+    display: flex;
+  }
+}
+
+
+/* --- Menú de Usuario Autenticado (Siempre Hamburguesa) --- */
+/* El toggler para el menú autenticado siempre debe ser visible */
+.navbar-toggler-authenticated {
+  display: flex;
+}
+
+.navbar-menu-authenticated {
+  position: absolute;
+  top: 100%;
+  right: 0; /* Alineado a la derecha */
+  width: 250px; /* Ancho fijo para el menú lateral */
+  background-color: var(--cosma-primary);
+  flex-direction: column;
+  align-items: flex-start; /* Alinear elementos a la izquierda */
+  padding: 1rem 0;
+  gap: 0.5rem;
+  transform: translateX(100%); /* Oculto a la derecha por defecto */
+  transition: transform 0.3s ease-in-out;
+  box-shadow: -4px 0 6px rgba(0, 0, 0, 0.1); /* Sombra lateral */
+  z-index: 999;
+}
+
+.navbar-menu-authenticated.active {
+  transform: translateX(0); /* Visible cuando está activo */
+}
+
+.navbar-menu-authenticated .navbar-nav {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinear elementos a la izquierda */
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-menu-authenticated .nav-item {
+  width: 100%;
+}
+
+.navbar-menu-authenticated .nav-item a {
+  padding: 10px 20px;
+  display: block;
+  color: var(--cosma-text-light);
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-menu-authenticated .nav-item a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--cosma-secondary);
+}
