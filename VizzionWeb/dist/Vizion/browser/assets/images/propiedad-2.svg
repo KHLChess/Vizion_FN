@@ -1,0 +1,44 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#EBF8FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#sky)"/>
+
+  <!-- Ground -->
+  <rect y="500" width="800" height="100" fill="#F0F4F8"/>
+
+  <!-- Building Structure -->
+  <rect x="300" y="100" width="200" height="400" fill="#FFFFFF" stroke="#1A365D" stroke-width="4"/>
+
+  <!-- Windows Grid -->
+  <g fill="#C5A059" opacity="0.3" stroke="#1A365D" stroke-width="2">
+    <rect x="320" y="120" width="40" height="40"/>
+    <rect x="380" y="120" width="40" height="40"/>
+    <rect x="440" y="120" width="40" height="40"/>
+
+    <rect x="320" y="180" width="40" height="40"/>
+    <rect x="380" y="180" width="40" height="40"/>
+    <rect x="440" y="180" width="40" height="40"/>
+
+    <rect x="320" y="240" width="40" height="40"/>
+    <rect x="380" y="240" width="40" height="40"/>
+    <rect x="440" y="240" width="40" height="40"/>
+
+    <rect x="320" y="300" width="40" height="40"/>
+    <rect x="380" y="300" width="40" height="40"/>
+    <rect x="440" y="300" width="40" height="40"/>
+
+    <rect x="320" y="360" width="40" height="40"/>
+    <rect x="380" y="360" width="40" height="40"/>
+    <rect x="440" y="360" width="40" height="40"/>
+  </g>
+
+  <!-- Entrance -->
+  <rect x="370" y="440" width="60" height="60" fill="#1A365D"/>
+
+  <!-- Text -->
+  <text x="400" y="550" font-family="sans-serif" font-size="24" text-anchor="middle" fill="#1A365D">TORRE HORIZONTE</text>
+</svg>

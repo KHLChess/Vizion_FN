@@ -1,22 +1,18 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { BackupGateway, BACKUP_GATEWAY } from '../application/ports/backup.gateway';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BackupService {
-  private apiUrl = 'http://localhost:8080/api/admin/backup';
-
-  constructor(private http: HttpClient) { }
+  constructor(@Inject(BACKUP_GATEWAY) private backupGateway: BackupGateway) { }
 
   /**
    * Descarga un respaldo de la base de datos.
    * @returns Un observable con el respaldo como un Blob.
    */
   downloadBackup(): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/download`, {
-      responseType: 'blob'
-    });
+    return this.backupGateway.downloadBackup();
   }
 }

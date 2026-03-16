@@ -1,122 +1,76 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { UserGateway, USER_GATEWAY } from '../application/ports/user.gateway';
+import { Usuario } from '../models/usuario.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8080/api/usuarios';
-
-  constructor(private http: HttpClient) { }
+  constructor(@Inject(USER_GATEWAY) private userGateway: UserGateway) { }
 
   // --- Métodos para el propio usuario (Mi Perfil) ---
-  getCurrentUserProfile(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/me`);
+  getCurrentUserProfile(): Observable<Usuario> {
+    return this.userGateway.getProfile();
   }
 
-  updateCurrentUserProfile(userData: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/me`, userData);
+  updateCurrentUserProfile(userData: Usuario): Observable<Usuario> {
+    return this.userGateway.updateProfile(userData);
   }
 
-  uploadProfilePicture(file: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<any>(`${this.apiUrl}/me/profile-picture`, formData);
+  uploadProfilePicture(file: File): Observable<Usuario> {
+    return this.userGateway.uploadProfilePicture(file);
   }
 
-  changePassword(currentPassword: string, newPassword: string): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/me/password`, { currentPassword, newPassword });
+  updatePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.userGateway.updatePassword({ currentPassword, newPassword });
   }
 
-  validateCurrentPassword(password: string): Observable<boolean> {
-    return this.http.post<boolean>(`${this.apiUrl}/me/validate-current-password`, password, {
-      headers: { 'Content-Type': 'text/plain' }
-    });
+  deleteMyAccount(): Observable<void> { // Descomentado
+    return this.userGateway.deleteMyAccount();
   }
 
   // --- Métodos para Gestión de Usuarios (ROOT) ---
-  getUserById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  getUserById(id: number): Observable<Usuario> {
+    return this.userGateway.getUserById(id);
   }
 
-  getAllUsers(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAllUsers(): Observable<Usuario[]> {
+    return this.userGateway.getAllUsers();
   }
 
-  createUser(userData: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, userData);
+  createUser(userData: Usuario): Observable<Usuario> {
+    return this.userGateway.createUser(userData);
   }
 
-  updateUser(id: number, userData: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, userData);
+  updateUser(id: number, userData: Usuario): Observable<Usuario> {
+    return this.userGateway.updateUser(id, userData);
   }
 
   deleteUser(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
-  }
-
-  deleteAllUsers(): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/delete-all`);
+    return this.userGateway.deleteUser(id);
   }
 
   deleteUsersBatch(ids: number[]): Observable<void> {
-    const options = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-      body: ids,
-    };
-    return this.http.delete<void>(`${this.apiUrl}/batch`, options);
-  }
-
-  hasReferrals(userId: number): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/${userId}/has-referrals`);
-  }
-
-  // --- Métodos para obtener listas específicas de usuarios ---
-  getManagers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/managers`);
-  }
-
-  getSalesforceUsers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/salesforce`);
-  }
-
-  getClientUsers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/clients`);
-  }
-
-  getPotentialReferrers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/potential-referrers`);
-  }
-
-  getDependents(userId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${userId}/dependents`);
-  }
-
-  getDependentsHierarchy(userId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${userId}/hierarchy`);
-  }
-
-  getClientsByManager(managerId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/manager/${managerId}/clients`);
-  }
-
-  // Alias para mantener compatibilidad con componentes existentes
-  getClients(): Observable<any[]> {
-    return this.getClientUsers();
+    return this.userGateway.deleteUsersBatch(ids);
   }
 
   // --- Métodos para validación de unicidad ---
   checkUsernameAvailability(username: string, userId: number): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/check-username`, { params: { username, userId: userId.toString() } });
+    return this.userGateway.checkUsernameAvailability(username, userId);
   }
 
   checkEmailAvailability(email: string, userId: number): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/check-email`, { params: { email, userId: userId.toString() } });
+    return this.userGateway.checkEmailAvailability(email, userId);
   }
 
-  // --- Nuevo método para crear usuarios por no-ROOTs ---
-  createUsuarioByCreator(creatorId: number, newUserData: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/create-dependent/${creatorId}`, newUserData);
+  // --- Métodos para obtener listas específicas de usuarios ---
+  getDependents(userId: number): Observable<Usuario[]> {
+    return this.userGateway.getDependents(userId);
+  }
+
+  // --- Métodos para creación/gestión de subordinados/clientes ---
+  registerSubordinate(subordinateData: Usuario): Observable<Usuario> {
+    return this.userGateway.registerSubordinate(subordinateData);
   }
 }

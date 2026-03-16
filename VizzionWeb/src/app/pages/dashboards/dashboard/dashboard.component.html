@@ -8,6 +8,37 @@
     </div>
   </div>
 
+  <!-- Métricas de Equipo/Descendencia -->
+  <div class="metrics-container" *ngIf="userRole !== 'ROOT' && !isLoadingMetrics">
+
+    <!-- Para OWNER, MANAGER, SELLER: Mostrar Clientes -->
+    <div class="metric-card" *ngIf="userRole === 'OWNER' || userRole === 'MANAGER' || userRole === 'SELLER'">
+      <div class="metric-icon"><i class="material-icons">groups</i></div>
+      <div class="metric-info">
+        <h3>{{ clientsCount }}</h3>
+        <p>Mis Clientes</p>
+      </div>
+    </div>
+
+    <!-- Para CLIENT: Mostrar Referidos -->
+    <div class="metric-card" *ngIf="userRole === 'CLIENT'">
+      <div class="metric-icon"><i class="material-icons">group_add</i></div>
+      <div class="metric-info">
+        <h3>{{ referralsCount }}</h3>
+        <p>Mis Referidos</p>
+      </div>
+    </div>
+
+    <!-- Para TODOS (menos ROOT): Total Descendencia -->
+    <div class="metric-card">
+      <div class="metric-icon"><i class="material-icons">hub</i></div>
+      <div class="metric-info">
+        <h3>{{ dependentsCount }}</h3>
+        <p>Red Total</p>
+      </div>
+    </div>
+  </div>
+
   <div class="icon-bar">
     <!-- Opciones para ROOT -->
     <ng-container *ngIf="userRole === 'ROOT'">

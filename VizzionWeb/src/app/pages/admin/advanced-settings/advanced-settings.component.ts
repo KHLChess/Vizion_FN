@@ -5,6 +5,7 @@ import { BackupService } from '../../../services/backup.service';
 import { AuthService } from '../../../services/auth.service';
 import { ConfirmationModalComponent } from '../../../components/confirmation-modal/confirmation-modal.component';
 import { saveAs } from 'file-saver';
+import { HttpErrorResponse } from '@angular/common/http'; // Importar HttpErrorResponse
 
 @Component({
   selector: 'app-advanced-settings',
@@ -32,14 +33,14 @@ export class AdvancedSettingsComponent implements OnInit {
     this.isDownloadingBackup = true;
     this.clearMessages();
     this.backupService.downloadBackup().subscribe({
-      next: (blob) => {
+      next: (blob: Blob) => { // Tipado explícito
         const timestamp = new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-');
-        const filename = `cosma_db_backup_${timestamp}.sql`;
+        const filename = `vizzion_db_backup_${timestamp}.sql`;
         saveAs(blob, filename);
         this.isDownloadingBackup = false;
         this.showBackupSuccessModal = true;
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         this.errorMessage = 'Error al generar el respaldo de la base de datos.';
         this.isDownloadingBackup = false;
         console.error(err);

@@ -56,12 +56,7 @@
           <div class="form-group">
             <label for="currentPassword">Contraseña Actual</label>
             <input type="password" id="currentPassword" name="currentPassword" [(ngModel)]="currentPassword" required (ngModelChange)="onCurrentPasswordChange($event)">
-            <i class="material-icons validation-icon" [class.valid]="currentPasswordValid === true" [class.invalid]="currentPasswordValid === false">
-              {{ currentPasswordValid === true ? 'check_circle' : (currentPasswordValid === false ? 'cancel' : '') }}
-            </i>
-            <div *ngIf="currentPasswordValid === false" class="validation-error">
-              Contraseña actual incorrecta.
-            </div>
+            <!-- Eliminado: Icono y mensaje de validación de currentPasswordValid -->
           </div>
 
           <div class="form-group">
@@ -92,7 +87,7 @@
 
         <div class="profile-actions">
           <button type="button" class="btn btn-primary" *ngIf="!isEditing" (click)="onEdit()">Editar Perfil</button>
-          <button type="submit" class="btn btn-success" *ngIf="isEditing" [disabled]="!profileForm.form.valid || usernameAvailability === false || emailAvailability === false || (enablePasswordChange && (!currentPasswordValid || !newPasswordDifferent || !passwordsMatch || !newPassword || newPassword.length < 6))">Guardar Cambios</button>
+          <button type="submit" class="btn btn-success" *ngIf="isEditing" [disabled]="!profileForm.form.valid || usernameAvailability === false || emailAvailability === false || (enablePasswordChange && (!newPasswordDifferent || !passwordsMatch || !newPassword || newPassword.length < 6))">Guardar Cambios</button>
           <button type="button" class="btn btn-secondary" *ngIf="isEditing" (click)="onCancel()">Cancelar</button>
         </div>
       </form>

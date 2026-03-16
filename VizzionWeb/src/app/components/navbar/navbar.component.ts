@@ -2,6 +2,8 @@ import { Component, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service'; // Importar UserService
+import { HttpErrorResponse } from '@angular/common/http'; // Importar HttpErrorResponse
 
 @Component({
   selector: 'app-navbar',
@@ -14,7 +16,8 @@ export class NavbarComponent {
   isScrolled = false;
   isMenuOpen = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  // Inyectar UserService
+  constructor(private authService: AuthService, private userService: UserService, private router: Router) { }
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
@@ -46,14 +49,15 @@ export class NavbarComponent {
   onDeleteAccount(): void {
     this.closeMenu(); // Cerrar el menú antes de la confirmación
     if (confirm('¿Está seguro de que desea eliminar su cuenta de forma permanente? Esta acción no se puede deshacer.')) {
-      this.authService.deleteAccount().subscribe({
+      // Usar userService.deleteMyAccount() en lugar de authService.deleteAccount()
+      this.userService.deleteMyAccount().subscribe({
         next: () => {
           console.log('Cuenta eliminada exitosamente.');
           alert('Su cuenta ha sido eliminada exitosamente.');
           this.authService.logout(); // Cerrar sesión después de la eliminación
           this.router.navigate(['/login']); // Redirigir al login
         },
-        error: (err) => {
+        error: (err: HttpErrorResponse) => { // Tipado explícito para 'err'
           console.error('Error al eliminar la cuenta:', err);
           if (err.status === 403) { // Si es un error de Forbidden (ej. ROOT)
             alert('No se pudo eliminar la cuenta: ' + (err.error.message || 'Acción no permitida.'));

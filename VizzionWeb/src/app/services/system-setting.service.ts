@@ -1,21 +1,20 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core'; // Importar Inject
 import { Observable } from 'rxjs';
+import { AppSettingsGateway, APP_SETTINGS_GATEWAY } from '../application/ports/app-settings.gateway'; // Importar APP_SETTINGS_GATEWAY
+import { AppSetting } from '../models/app-setting.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SystemSettingService {
-  private apiUrl = 'http://localhost:8080/api/settings';
-
-  constructor(private http: HttpClient) { }
+  constructor(@Inject(APP_SETTINGS_GATEWAY) private appSettingsGateway: AppSettingsGateway) { }
 
   /**
    * Obtiene todas las configuraciones del sistema.
    * @returns Un observable con la lista de configuraciones.
    */
-  getSettings(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getSettings(): Observable<AppSetting[]> {
+    return this.appSettingsGateway.getSettings();
   }
 
   /**
@@ -23,8 +22,8 @@ export class SystemSettingService {
    * @param settings La lista de objetos de configuración a actualizar.
    * @returns Un observable con la lista de configuraciones actualizadas.
    */
-  updateSettings(settings: any[]): Observable<any> {
-    return this.http.put<any>(this.apiUrl, settings);
+  updateSettings(settings: AppSetting[]): Observable<AppSetting[]> {
+    return this.appSettingsGateway.updateSettings(settings);
   }
 
   /**
@@ -33,9 +32,7 @@ export class SystemSettingService {
    * @param file El archivo de imagen a subir.
    * @returns Un observable con la configuración actualizada.
    */
-  uploadImageForSetting(settingKey: string, file: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<any>(`${this.apiUrl}/${settingKey}/upload-image`, formData);
+  uploadImageForSetting(settingKey: string, file: File): Observable<AppSetting> {
+    return this.appSettingsGateway.uploadSettingImage(settingKey, file);
   }
 }

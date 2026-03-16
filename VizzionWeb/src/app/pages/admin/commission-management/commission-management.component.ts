@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommissionService } from '../../../services/commission.service';
 import { ReportService } from '../../../services/report.service';
-import { ExchangeRateService } from '../../../services/exchange-rate.service';
+// import { ExchangeRateService } from '../../../services/exchange-rate.service'; // Eliminado
 import { AuthService } from '../../../services/auth.service';
 import { ConfirmationModalComponent } from '../../../components/confirmation-modal/confirmation-modal.component';
 import { saveAs } from 'file-saver';
+import { HttpErrorResponse } from '@angular/common/http'; // Importar HttpErrorResponse
 
 @Component({
   selector: 'app-commission-management',
@@ -24,7 +25,6 @@ export class CommissionManagementComponent implements OnInit {
   isProcessing = false;
   isGeneratingReport = false;
 
-  // Modales de confirmación y edición
   showPayModal = false;
   commissionToPay: any = null;
 
@@ -38,18 +38,18 @@ export class CommissionManagementComponent implements OnInit {
   showDetailsModal = false;
   commissionToView: any = null;
 
-  usdToMxnRate = 20.0;
+  // usdToMxnRate = 20.0; // Eliminado
 
   constructor(
     private commissionService: CommissionService,
     private reportService: ReportService,
-    private exchangeRateService: ExchangeRateService,
+    // private exchangeRateService: ExchangeRateService, // Eliminado
     public authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadCommissions();
-    this.loadExchangeRate();
+    // this.loadExchangeRate(); // Eliminado
   }
 
   loadCommissions(): void {
@@ -60,16 +60,16 @@ export class CommissionManagementComponent implements OnInit {
         this.filterCommissions();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al cargar comisiones:', err);
         this.isLoading = false;
       }
     });
   }
 
-  loadExchangeRate(): void {
-    this.usdToMxnRate = this.exchangeRateService.getRate('USD', 'MXN');
-  }
+  // loadExchangeRate(): void { // Eliminado
+  //   this.usdToMxnRate = this.exchangeRateService.getRate('USD', 'MXN');
+  // }
 
   generateReport(format: 'pdf' | 'xls'): void {
     this.isGeneratingReport = true;
@@ -79,7 +79,7 @@ export class CommissionManagementComponent implements OnInit {
         saveAs(blob, filename);
         this.isGeneratingReport = false;
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al generar el reporte de comisiones:', err);
         this.isGeneratingReport = false;
       }
@@ -102,7 +102,7 @@ export class CommissionManagementComponent implements OnInit {
         this.updateCommissionInList(updatedCommission);
         this.closePayModal();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al marcar la comisión como pagada:', err);
         this.closePayModal();
       }
@@ -131,7 +131,7 @@ export class CommissionManagementComponent implements OnInit {
         this.updateCommissionInList(updatedCommission);
         this.closeVoidModal();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al anular la comisión:', err);
         this.closeVoidModal();
       }
@@ -160,7 +160,7 @@ export class CommissionManagementComponent implements OnInit {
         this.updateCommissionInList(updatedCommission);
         this.closeNotesModal();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al guardar notas:', err);
         this.closeNotesModal();
       }

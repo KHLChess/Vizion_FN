@@ -1,7 +1,7 @@
-<nav class="navbar"> <!-- Eliminada [class.scrolled]="isScrolled" -->
+<nav class="navbar">
   <div class="container navbar-container">
-    <a routerLink="/dashboard" class="navbar-brand"> <!-- Enlace al dashboard en lugar de Home -->
-      <span class="brand-text">COSMA</span>
+    <a routerLink="/dashboard" class="navbar-brand">
+      <span class="brand-text">VIZZION</span>
     </a>
 
     <!-- Menú de Usuario Autenticado (Hamburguesa) -->
@@ -24,6 +24,8 @@
           <li class="nav-item"><a routerLink="/admin/users" (click)="closeMenu()">Gestionar Usuarios</a></li>
           <li class="nav-item"><a routerLink="/admin/properties" (click)="closeMenu()">Gestionar Propiedades</a></li>
           <li class="nav-item"><a routerLink="/admin/commissions" (click)="closeMenu()">Gestionar Comisiones</a></li>
+          <!-- Corregido: Apunta a la nueva ruta de AdvancedSettingsComponent -->
+          <li class="nav-item"><a routerLink="/dashboard/advanced-settings" routerLinkActive="active" (click)="closeMenu()">Configuración Avanzada</a></li>
         </ng-container>
 
         <!-- Opciones específicas para OWNER -->
@@ -32,11 +34,12 @@
           <li class="nav-item"><a routerLink="/owner/properties" (click)="closeMenu()">Ver Propiedades</a></li>
           <li class="nav-item"><a routerLink="/owner/commissions" (click)="closeMenu()">Autorizar Comisiones</a></li>
           <li class="nav-item"><a routerLink="/owner/reports" (click)="closeMenu()">Reportes de Ventas</a></li>
+          <!-- La configuración general para OWNER está en /admin/settings -->
+          <li class="nav-item"><a routerLink="/admin/settings" routerLinkActive="active" (click)="closeMenu()">Configuración General</a></li>
         </ng-container>
 
         <!-- Opciones específicas para MANAGER -->
         <ng-container *ngIf="getUserRole() === 'MANAGER'">
-          <li class="nav-item"><a routerLink="/manager/sellers" (click)="closeMenu()">Gestionar Vendedores</a></li>
           <li class="nav-item"><a routerLink="/manager/clients" (click)="closeMenu()">Gestionar Clientes</a></li>
           <li class="nav-item"><a routerLink="/manager/properties" (click)="closeMenu()">Asignar Propiedades</a></li>
           <li class="nav-item"><a routerLink="/manager/performance" (click)="closeMenu()">Reportes Equipo</a></li>
@@ -57,9 +60,6 @@
           <li class="nav-item"><a routerLink="/client/referrals" (click)="closeMenu()">Mis Referidos</a></li>
         </ng-container>
 
-        <li class="nav-item">
-          <a routerLink="/dashboard/settings" routerLinkActive="active" (click)="closeMenu()">Configuración</a>
-        </li>
         <li class="nav-item">
           <a (click)="onLogout(); closeMenu()">Cerrar Sesión</a>
         </li>

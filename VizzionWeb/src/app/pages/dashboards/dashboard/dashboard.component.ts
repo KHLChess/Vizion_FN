@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { UserService } from '../../../services/user.service';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -12,20 +13,33 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class DashboardComponent implements OnInit {
   userRole: string | null = null;
-  userFullName: string | null = null; // Nueva propiedad para el nombre completo
+  userFullName: string | null = null;
   welcomeMessage: string = '';
   motivationalQuote: { quote: string, author: string } = { quote: '', author: '' };
 
-  constructor(private authService: AuthService, private router: Router) { }
+  // Métricas de descendencia
+  dependentsCount: number = 0;
+  clientsCount: number = 0;
+  referralsCount: number = 0;
+  isLoadingMetrics: boolean = false;
+
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.userRole = this.authService.getUserRole();
-    this.userFullName = this.authService.getUserFullName(); // Obtener el nombre completo
+    this.userFullName = this.authService.getUserFullName();
+
     if (!this.userRole && this.authService.isLoggedIn()) {
       this.authService.logout();
       this.router.navigate(['/login']);
     }
+
     this.setDashboardContent();
+    this.loadTeamMetrics();
   }
 
   setDashboardContent(): void {
@@ -56,8 +70,31 @@ export class DashboardComponent implements OnInit {
         this.welcomeMessage = `${welcomeBase} Explora tus propiedades y oportunidades.`;
         break;
       default:
-        this.welcomeMessage = 'Bienvenido al Dashboard de Cosma.';
+        this.welcomeMessage = 'Bienvenido al Dashboard de Vizzion.';
         break;
+    }
+  }
+
+  loadTeamMetrics(): void {
+    const userId = this.authService.getUserId(); // Asumiendo que este método existe en AuthService, si no, usar getUserRole y decodificar
+    // Nota: AuthService.getUserId() fue verificado previamente y existe.
+
+    if (userId) {
+      this.isLoadingMetrics = true;
+      this.userService.getDependents(userId).subscribe({
+        next: (dependents) => {
+          this.dependentsCount = dependents.length;
+          // Filtrar por roles según la lógica de negocio
+          this.clientsCount = dependents.filter(u => u.role === 'CLIENT').length;
+          // Asumiendo que los referidos tienen rol 'REFERRAL' o similar. Ajustar si es necesario.
+          this.referralsCount = dependents.filter(u => u.role === 'REFERRAL' || u.role === 'REFERIDO').length;
+          this.isLoadingMetrics = false;
+        },
+        error: (err) => {
+          console.error('Error loading dependents metrics', err);
+          this.isLoadingMetrics = false;
+        }
+      });
     }
   }
 

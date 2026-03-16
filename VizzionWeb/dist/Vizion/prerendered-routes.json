@@ -1,0 +1,32 @@
+{
+  "routes": {
+    "/admin/commissions": {},
+    "/admin/properties": {},
+    "/admin/settings": {},
+    "/admin/users": {},
+    "/client/my-properties": {},
+    "/client/purchases": {},
+    "/client/referrals": {},
+    "/contacto": {},
+    "/dashboard": {},
+    "/dashboard/profile": {},
+    "/dashboard/settings": {},
+    "/login": {},
+    "/manager/clients": {},
+    "/manager/performance": {},
+    "/manager/properties": {},
+    "/manager/sellers": {},
+    "/nosotros": {},
+    "/owner/commissions": {},
+    "/owner/properties": {},
+    "/owner/reports": {},
+    "/owner/team": {},
+    "/propiedades": {},
+    "/seller/clients": {},
+    "/seller/properties": {},
+    "/seller/referrals": {},
+    "/seller/sales": {},
+    "/servicios": {},
+    "/unauthorized": {}
+  }
+}

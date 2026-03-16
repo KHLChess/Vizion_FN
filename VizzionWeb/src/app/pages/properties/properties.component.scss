@@ -252,13 +252,24 @@
   justify-content: space-between;
   align-items: center;
 
-  .btn-details {
+  .btn-detail {
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
+    padding: 10px 20px; /* Aumentado el padding */
+    border-radius: 8px; /* Ligeramente más redondeado */
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Añadido box-shadow a la transición */
+    font-weight: 600; /* Más negrita */
+    text-transform: uppercase; /* Texto en mayúsculas */
+    letter-spacing: 0.5px; /* Espaciado entre letras */
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Sombra sutil */
+
+    &:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3); /* Sombra más pronunciada al pasar el ratón */
+    }
   }
 
   .btn-contact-agent {
@@ -325,14 +336,90 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Estilos para la vista de detalle de propiedad */
-.property-detail-card {
+/* Estilos para el modal de detalle de propiedad */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+  overflow-y: auto; /* Permite desplazamiento si el contenido es largo */
+  padding: 20px; /* Espacio alrededor del modal */
+}
+
+.modal-container {
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-  padding: 30px;
-  margin-bottom: 40px;
-  flex: 1; /* Ocupar todo el ancho disponible */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 900px; /* Ancho máximo del modal */
+  width: 100%;
+  padding: 40px; /* Aumentado el padding para más separación */
+  position: relative;
+  animation: fadeInScale 0.3s ease-out; /* Animación de entrada */
+  border: 2px solid #007bff; /* Borde más pronunciado */
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.property-detail-card {
+  /* Estos estilos ya estaban definidos, se mantienen */
+  /* Eliminado padding: 0; para que el padding de .modal-container se aplique */
+  margin-bottom: 0; /* El margin se maneja en .modal-container */
+  box-shadow: none; /* La sombra se maneja en .modal-container */
+  flex: none; /* No ocupar todo el ancho disponible, sino el del modal-container */
+
+  /* Mejoras de estilo para el contenido del modal */
+  .close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 2em;
+    color: #555;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+
+    &:hover {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+  }
+
+  h2 {
+    font-size: 2.5em; /* Aumentar tamaño del título */
+    color: #1A365D;
+    margin-bottom: 15px;
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: 1.05em;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 10px;
+  }
+
+  strong {
+    color: #1A365D;
+  }
 }
 
 .detail-header {
@@ -401,13 +488,13 @@
       color: #777;
     }
   }
+}
 
-  .detail-description {
-    font-size: 1.1em;
-    line-height: 1.7;
-    color: #444;
-    margin-bottom: 30px;
-  }
+.detail-description {
+  font-size: 1.1em;
+  line-height: 1.7;
+  color: #444;
+  margin-bottom: 30px;
 }
 
 .detail-features {

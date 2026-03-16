@@ -1,6 +1,14 @@
 <div class="user-panel-container">
-  <h1>{{ title }}</h1>
-  <p>{{ description }}</p>
+  <div class="panel-header">
+    <div>
+      <h1>{{ title }}</h1>
+      <p>{{ description }}</p>
+    </div>
+    <button class="btn-add" (click)="openRegisterModal()" *ngIf="currentUserRole !== 'ROOT'">
+      <i class="material-icons">add</i>
+      <span>{{ getAddButtonText() }}</span>
+    </button>
+  </div>
 
   <div class="table-container" *ngIf="!isLoading">
     <div class="search-bar">
@@ -17,18 +25,30 @@
             <th>Rol</th>
             <th>Referente</th>
             <th>Gestionado Por</th>
+            <th *ngIf="currentUserRole === 'ROOT' || currentUserRole === 'OWNER'">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let user of filteredDependents">
             <td>{{ user.fullName }}</td>
-            <td>{{ user.email }}</td>
+            <td>{{ user.email || 'N/A' }}</td>
             <td>{{ user.role | titlecase }}</td>
-            <td>{{ user.referrer?.fullName || 'N/A' }}</td>
-            <td>{{ user.managedBy?.fullName || 'N/A' }}</td>
+            <!-- Usar referrerName y managedByName -->
+            <td>{{ user.referrerName || 'N/A' }}</td>
+            <td>{{ user.managedByName || 'N/A' }}</td>
+            <td *ngIf="currentUserRole === 'ROOT' || currentUserRole === 'OWNER'">
+              <div class="action-buttons">
+                <button class="btn-action btn-promote" (click)="promoteUser(user)" *ngIf="canPromote(user)" title="Ascender">
+                  <i class="material-icons">arrow_upward</i>
+                </button>
+                <button class="btn-action btn-demote" (click)="demoteUser(user)" *ngIf="canDemote(user)" title="Degradar">
+                  <i class="material-icons">arrow_downward</i>
+                </button>
+              </div>
+            </td>
           </tr>
           <tr *ngIf="filteredDependents.length === 0">
-            <td colspan="5" class="no-results">No se encontraron usuarios con ese criterio.</td>
+            <td [attr.colspan]="(currentUserRole === 'ROOT' || currentUserRole === 'OWNER') ? 6 : 5" class="no-results">No se encontraron usuarios en tu red.</td>
           </tr>
         </tbody>
       </table>
@@ -38,5 +58,134 @@
   <div class="loading-indicator" *ngIf="isLoading">
     <div class="spinner"></div>
     <p>Cargando equipo...</p>
+  </div>
+</div>
+
+<!-- Modal de Registro -->
+<div class="modal-overlay" *ngIf="showRegisterModal">
+  <div class="modal-content">
+    <h2>{{ getAddButtonText() }}</h2>
+    <div class="form-group">
+      <label>Nombre Completo</label>
+      <input type="text" [(ngModel)]="newUserData.fullName" required>
+    </div>
+    <div class="form-group" *ngIf="currentUserRole !== 'CLIENT'">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="newUserData.email" (ngModelChange)="onEmailChange($event)" required>
+      <div *ngIf="!isEmailFormatValid" class="validation-error">Formato de email inválido.</div>
+      <div *ngIf="isCheckingEmail" class="validation-info">Verificando email...</div>
+      <div *ngIf="!isCheckingEmail && isEmailFormatValid && newUserData.email">
+        <div *ngIf="isEmailAvailable" class="validation-success">
+          <i class="material-icons">check_circle</i> Email disponible
+        </div>
+        <div *ngIf="!isEmailAvailable" class="validation-error">Este email ya está en uso.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nombre de Usuario</label>
+      <input type="text" [(ngModel)]="newUserData.username" (ngModelChange)="onUsernameChange($event)" required>
+      <div *ngIf="isCheckingUsername" class="validation-info">Verificando usuario...</div>
+      <div *ngIf="!isCheckingUsername && newUserData.username">
+        <div *ngIf="isUsernameAvailable" class="validation-success">
+          <i class="material-icons">check_circle</i> Usuario disponible
+        </div>
+        <div *ngIf="!isUsernameAvailable" class="validation-error">Este nombre de usuario ya está en uso.</div>
+      </div>
+    </div>
+    <div class="form-group" *ngIf="currentUserRole !== 'CLIENT'">
+      <label>Contraseña</label>
+      <input type="password" [(ngModel)]="newUserData.password" required>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeModals()">Cancelar</button>
+      <button class="btn-confirm" (click)="confirmRegister()" [disabled]="isProcessingAction || !isUsernameAvailable || (currentUserRole !== 'CLIENT' && (!isEmailAvailable || !isEmailFormatValid))">
+        {{ isProcessingAction ? 'Validando...' : 'Siguiente' }}
+      </button>
+    </div>
+    <p class="error-msg" *ngIf="registerModalError">{{ registerModalError }}</p>
+  </div>
+</div>
+
+<!-- Modal de Confirmación Genérico -->
+<app-confirmation-modal
+  [isOpen]="showConfirmationModal"
+  [title]="confirmationModalConfig.title"
+  [message]="confirmationModalConfig.message"
+  [confirmText]="confirmationModalConfig.confirmText"
+  [type]="confirmationModalConfig.type"
+  (confirm)="executeRegister()"
+  (cancel)="cancelRegister()">
+</app-confirmation-modal>
+
+<!-- Modal de Éxito -->
+<app-confirmation-modal
+  [isOpen]="showSuccessModal"
+  [title]="successModalConfig.title"
+  [message]="successModalConfig.message"
+  [confirmText]="successModalConfig.confirmText"
+  [type]="successModalConfig.type"
+  (confirm)="closeModals()">
+</app-confirmation-modal>
+
+<!-- Modal de Ascenso -->
+<div class="modal-overlay" *ngIf="showPromoteModal">
+  <div class="modal-content">
+    <h2>Ascender Usuario</h2>
+    <p>Seleccione el nuevo rol para <strong>{{ selectedUser?.fullName }}</strong>:</p>
+
+    <div class="form-group">
+      <label>Nuevo Rol:</label>
+      <select [(ngModel)]="targetRole">
+        <option value="" disabled>Seleccione...</option>
+        <option value="SELLER" *ngIf="selectedUser?.role === 'CLIENT'">Vendedor</option>
+        <option value="MANAGER" *ngIf="selectedUser?.role === 'CLIENT' || selectedUser?.role === 'SELLER'">Gerente</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeModals()">Cancelar</button>
+      <button class="btn-confirm" (click)="confirmPromote()" [disabled]="!targetRole || isProcessingAction">
+        {{ isProcessingAction ? 'Procesando...' : 'Confirmar Ascenso' }}
+      </button>
+    </div>
+    <p class="error-msg" *ngIf="modalError">{{ modalError }}</p>
+  </div>
+</div>
+
+<!-- Modal de Degradación -->
+<div class="modal-overlay" *ngIf="showDemoteModal">
+  <div class="modal-content">
+    <h2>Degradar Usuario</h2>
+    <p>Seleccione el nuevo rol para <strong>{{ selectedUser?.fullName }}</strong>:</p>
+
+    <div class="form-group">
+      <label>Nuevo Rol:</label>
+      <select [(ngModel)]="targetRole" (change)="onDemoteRoleChange()">
+        <option value="" disabled>Seleccione...</option>
+        <option value="MANAGER" *ngIf="selectedUser?.role === 'OWNER'">Gerente</option>
+        <option value="SELLER" *ngIf="selectedUser?.role === 'OWNER' || selectedUser?.role === 'MANAGER'">Vendedor</option>
+        <option value="CLIENT">Cliente</option>
+      </select>
+    </div>
+
+    <!-- Selector de Sucesor (Solo si se degrada a CLIENTE) -->
+    <div class="form-group" *ngIf="targetRole === 'CLIENT'">
+      <label>Transferir descendencia a (Nuevo Gestor):</label>
+      <select [(ngModel)]="successorId">
+        <option [ngValue]="null" disabled>Seleccione un sucesor...</option>
+        <option *ngFor="let successor of potentialSuccessors" [ngValue]="successor.id">
+          {{ successor.fullName }} ({{ successor.role | titlecase }})
+        </option>
+      </select>
+      <p class="help-text">Es obligatorio transferir la descendencia antes de degradar a Cliente.</p>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeModals()">Cancelar</button>
+      <button class="btn-confirm btn-danger" (click)="confirmDemote()" [disabled]="!targetRole || (targetRole === 'CLIENT' && !successorId) || isProcessingAction">
+        {{ isProcessingAction ? 'Procesando...' : 'Confirmar Degradación' }}
+      </button>
+    </div>
+    <p class="error-msg" *ngIf="modalError">{{ modalError }}</p>
   </div>
 </div>

@@ -1,186 +1,150 @@
-<div class="properties-header">
-  <div class="container">
-    <h1>Nuestras Propiedades</h1>
-    <p>Encuentra el espacio perfecto para tu estilo de vida</p>
+<div class="properties-page">
+  <div class="properties-header">
+    <h1>Propiedades</h1>
+    <p>Encuentra tu hogar ideal o la inversión perfecta.</p>
   </div>
-</div>
 
-<div class="container properties-container">
-  <!-- Vista de Detalle de Propiedad Individual -->
-  <ng-container *ngIf="selectedProperty; else propertyList">
-    <div class="property-detail-card">
-      <div class="detail-header">
-        <button class="back-button" (click)="selectedProperty = null; loadProperties()">
-          <i class="material-icons">arrow_back</i> Volver a la lista
-        </button>
-        <h2>{{ selectedProperty.title }}</h2>
-      </div>
-
-      <div class="detail-image-gallery">
-        <img *ngFor="let image of selectedProperty.images" [src]="image | propertyImage" [alt]="selectedProperty.title" class="detail-image">
-        <img *ngIf="!selectedProperty.images || selectedProperty.images.length === 0" src="assets/images/placeholder.jpg" alt="No Image" class="detail-image">
-      </div>
-
-      <div class="detail-content">
-        <p class="detail-price">{{ selectedProperty.price | currency:'MXN':'symbol-narrow':'1.0-0' }}</p>
-        <p class="detail-location"><i class="material-icons">location_on</i> {{ selectedProperty.location }}</p>
-        <p class="detail-description">{{ selectedProperty.description }}</p>
-
-        <div class="detail-features">
-          <div class="feature-item">
-            <i class="material-icons">bed</i>
-            <span>{{ selectedProperty.beds }} Habitaciones</span>
-          </div>
-          <div class="feature-item">
-            <i class="material-icons">bathtub</i>
-            <span>{{ selectedProperty.baths }} Baños</span>
-          </div>
-          <div class="feature-item">
-            <i class="material-icons">square_foot</i>
-            <span>{{ selectedProperty.area }} m²</span>
-          </div>
-          <div class="feature-item">
-            <i class="material-icons">category</i>
-            <span>{{ selectedProperty.type }}</span>
-          </div>
-          <div class="feature-item">
-            <i class="material-icons">check_circle</i>
-            <span>Estado: {{ selectedProperty.status }}</span>
-          </div>
-        </div>
-
-        <div class="additional-features" *ngIf="selectedProperty.features && selectedProperty.features.length > 0">
-          <h3>Características Adicionales</h3>
-          <ul>
-            <li *ngFor="let feature of selectedProperty.features"><i class="material-icons">done</i> {{ feature }}</li>
-          </ul>
-        </div>
-
-        <div class="contact-section">
-          <h3>¿Interesado en esta propiedad?</h3>
-          <a href="https://wa.me/525512345678?text=Hola,%20me%20interesa%20la%20propiedad%20{{selectedProperty.title}}" target="_blank" class="btn-contact-agent-detail" title="Contactar por WhatsApp">
-            <i class="material-icons">whatsapp</i> Contactar Agente
-          </a>
-        </div>
-      </div>
-    </div>
-  </ng-container>
-
-  <!-- Vista de Lista de Propiedades (Else Block) -->
-  <ng-template #propertyList>
-    <!-- Sidebar Filters -->
-    <aside class="filters-sidebar">
+  <div class="container properties-container">
+    <!-- Sidebar de Filtros -->
+    <div class="filters-sidebar">
       <div class="filter-group">
         <h3>Buscar</h3>
-        <input type="text" placeholder="Ubicación, nombre..." class="search-input"
-               [(ngModel)]="searchTerm" (ngModelChange)="applyFiltersAndSorting()">
+        <input type="text" class="search-input" [(ngModel)]="searchTerm" placeholder="Título, ubicación..." (input)="applyFiltersAndSorting()">
+      </div>
+
+      <div class="filter-group">
+        <h3>Precio Máximo</h3>
+        <input type="range" class="slider" [(ngModel)]="maxPrice" [min]="minPriceLimit" [max]="maxPriceLimit" (input)="applyFiltersAndSorting()">
+        <div class="price-labels">
+          <span>0</span>
+          <span>{{ maxPrice | currency:'USD':'symbol':'1.0-0' }}</span>
+        </div>
       </div>
 
       <div class="filter-group">
         <h3>Tipo de Propiedad</h3>
-        <label class="checkbox-container">
-          <input type="checkbox" [checked]="selectedTypes['Casa']" (change)="toggleType('Casa')"> Casa
+        <label class="checkbox-container">Casa
+          <input type="checkbox" [(ngModel)]="selectedTypes['Casa']" (change)="toggleType('Casa')">
           <span class="checkmark"></span>
         </label>
-        <label class="checkbox-container">
-          <input type="checkbox" [checked]="selectedTypes['Departamento']" (change)="toggleType('Departamento')"> Departamento
+        <label class="checkbox-container">Departamento
+          <input type="checkbox" [(ngModel)]="selectedTypes['Departamento']" (change)="toggleType('Departamento')">
           <span class="checkmark"></span>
         </label>
-        <label class="checkbox-container">
-          <input type="checkbox" [checked]="selectedTypes['Terreno']" (change)="toggleType('Terreno')"> Terreno
+        <label class="checkbox-container">Terreno
+          <input type="checkbox" [(ngModel)]="selectedTypes['Terreno']" (change)="toggleType('Terreno')">
           <span class="checkmark"></span>
         </label>
       </div>
 
-      <div class="filter-group">
-        <h3>Precio Máximo: {{ maxPrice | currency:'MXN':'symbol-narrow':'1.0-0' }}</h3>
-        <input type="range" [min]="minPriceLimit" [max]="maxPriceLimit" [(ngModel)]="maxPrice" (ngModelChange)="applyFiltersAndSorting()" class="slider">
-        <div class="price-labels">
-          <span>{{ minPriceLimit | currency:'MXN':'symbol-narrow':'1.0-0' }}</span>
-          <span>{{ maxPriceLimit | currency:'MXN':'symbol-narrow':'1.0-0' }}</span>
-        </div>
-      </div>
-    </aside>
+      <button class="btn-filter" (click)="clearFilters()">Limpiar Filtros</button>
+    </div>
 
-    <!-- Properties Grid -->
-    <main class="properties-grid-section">
-      <!-- Indicador de Carga -->
-      <div class="loading-indicator" *ngIf="isLoading">
-        <div class="spinner"></div>
-        <p>Cargando propiedades...</p>
-      </div>
-
-      <ng-container *ngIf="!isLoading">
-        <div class="grid-header">
-          <span>Mostrando {{ filteredProperties.length }} resultados</span>
-          <select class="sort-select" [(ngModel)]="sortOrder" (ngModelChange)="applyFiltersAndSorting()">
+    <!-- Sección Principal de Propiedades -->
+    <div class="properties-grid-section">
+      <div class="grid-header">
+        <span>Mostrando {{ paginatedProperties.length }} de {{ filteredProperties.length }} propiedades</span>
+        <div class="filter-group">
+          <label for="sortOrder">Ordenar por:</label>
+          <select id="sortOrder" class="sort-select" [(ngModel)]="sortOrder" (change)="applyFiltersAndSorting()">
             <option value="recent">Más recientes</option>
             <option value="price-asc">Precio: Menor a Mayor</option>
             <option value="price-desc">Precio: Mayor a Menor</option>
           </select>
         </div>
+      </div>
 
-        <div class="properties-grid" *ngIf="paginatedProperties.length > 0; else noPropertiesFound">
-          @for (property of paginatedProperties; track property.id) {
-            <div class="property-card animate-fade-in">
-              <div class="card-image">
-                <img [src]="property | propertyImage" [alt]="property.title">
-                <span class="status-tag" [class.sold]="property.status === 'Vendido'">{{ property.status }}</span>
-                <span class="price-tag">{{ property.price | currency:'MXN':'symbol-narrow':'1.0-0' }}</span>
+      <div *ngIf="isLoading" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Cargando propiedades...</p>
+      </div>
+
+      <div *ngIf="!isLoading && paginatedProperties.length === 0" class="no-results">
+        <i class="material-icons">sentiment_dissatisfied</i>
+        <p>No se encontraron propiedades que coincidan con los criterios de búsqueda.</p>
+      </div>
+
+      <div class="properties-grid" *ngIf="!isLoading && paginatedProperties.length > 0">
+        @for (property of paginatedProperties; track property.id) {
+          <div class="property-card"> <!-- Eliminado el click handler de la tarjeta para que solo el botón lo active -->
+            <div class="card-image">
+              <img [src]="property.imageIds && property.imageIds.length > 0 ? (property.imageIds[0] | propertyImage) : 'assets/images/placeholder-property.jpg'" [alt]="property.title">
+              <span class="status-tag" [ngClass]="property.status === 'Vendido' ? 'sold' : ''">{{ property.status }}</span>
+              <span class="price-tag">{{ property.price | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="card-content">
+              <h3>{{ property.title }}</h3>
+              <p class="location"><i class="material-icons">location_on</i> {{ property.location }}</p>
+              <div class="card-features">
+                <div class="feature"><i class="material-icons">bed</i> {{ property.beds }}</div>
+                <div class="feature"><i class="material-icons">bathtub</i> {{ property.baths }}</div>
+                <div class="feature"><i class="material-icons">square_foot</i> {{ property.area }} m²</div>
               </div>
-              <div class="card-content">
-                <h3>{{ property.title }}</h3>
-                <p class="location"><i class="material-icons">location_on</i> {{ property.location }}</p>
-
-                <div class="card-features">
-                  <div class="feature">
-                    <i class="material-icons">bed</i>
-                    <span>{{ property.beds }} Hab.</span>
-                  </div>
-                  <div class="feature">
-                    <i class="material-icons">bathtub</i>
-                    <span>{{ property.baths }} Baños</span>
-                  </div>
-                  <div class="feature">
-                    <i class="material-icons">square_foot</i>
-                    <span>{{ property.area }} m²</span>
-                  </div>
-                </div>
-
-                <div class="card-footer">
-                  <button class="btn-details" [routerLink]="['/propiedades', property.id]">Ver Detalles</button>
-                  <a href="https://wa.me/525512345678?text=Hola,%20me%20interesa%20la%20propiedad%20{{property.title}}" target="_blank" class="btn-contact-agent" title="Contactar por WhatsApp">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                    </svg>
-                  </a>
-                </div>
+              <div class="card-footer">
+                <!-- Modificado: Eliminado routerLink y añadido click handler para abrir el modal -->
+                <button class="btn-detail" (click)="loadPropertyDetails(property.id!)">Ver Detalles</button>
+                <!-- <button class="btn-contact-agent"><i class="fab fa-whatsapp"></i></button> -->
               </div>
             </div>
-          }
-        </div>
-
-        <!-- Paginación Dinámica -->
-        <div class="pagination" *ngIf="totalPages > 1">
-          <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1">
-            <i class="material-icons">chevron_left</i>
-          </button>
-          @for (page of getPages(); track page) {
-            <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
-              {{ page }}
-            </button>
-          }
-          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
-            <i class="material-icons">chevron_right</i>
-          </button>
-        </div>
-      </ng-container>
-    </main>
-
-    <ng-template #noPropertiesFound>
-      <div class="no-properties-found">
-        <i class="material-icons">search_off</i>
-        <p>No se encontraron propiedades que coincidan con tus criterios de búsqueda.</p>
-        <button (click)="clearFilters()" class="btn-clear-filters">Limpiar Filtros</button>
+          </div>
+        }
       </div>
-    </ng-template>
+
+      <div *ngIf="totalPages > 1" class="pagination">
+        <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1">Anterior</button>
+        @for (page of getPages(); track page) {
+          <button class="page-btn" (click)="goToPage(page)" [class.active]="page === currentPage">{{ page }}</button>
+        }
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Detalle de Propiedad (se muestra si selectedProperty no es null) -->
+  <div *ngIf="selectedProperty" class="modal-overlay" (click)="selectedProperty = null">
+    <div class="modal-container property-detail-card" (click)="$event.stopPropagation()">
+      <div class="detail-header">
+        <button class="back-button" (click)="selectedProperty = null"><i class="material-icons">arrow_back</i> Volver a la lista</button>
+        <h2>{{ selectedProperty.title }}</h2>
+      </div>
+
+      <div class="detail-image-gallery">
+        @for (imageId of selectedProperty.imageIds; track imageId) {
+          <img [src]="imageId | propertyImage" [alt]="selectedProperty.title" class="detail-image">
+        }
+        <img *ngIf="!selectedProperty.imageIds || selectedProperty.imageIds.length === 0" src="assets/images/placeholder-property.jpg" alt="No Image" class="detail-image">
+      </div>
+
+      <div class="detail-content">
+        <p class="detail-price">{{ selectedProperty.price | currency:'USD':'symbol':'1.0-0' }}</p>
+        <p class="detail-location"><i class="material-icons">location_on</i> {{ selectedProperty.location }}</p>
+        <p class="detail-description">{{ selectedProperty.description || 'Sin descripción disponible.' }}</p>
+
+        <div class="detail-features">
+          <div class="feature-item"><i class="material-icons">bed</i> {{ selectedProperty.beds }} Habitaciones</div>
+          <div class="feature-item"><i class="material-icons">bathtub</i> {{ selectedProperty.baths }} Baños</div>
+          <div class="feature-item"><i class="material-icons">square_foot</i> {{ selectedProperty.area }} m²</div>
+          <div class="feature-item"><i class="material-icons">category</i> {{ selectedProperty.type }}</div>
+          <div class="feature-item"><i class="material-icons">sell</i> {{ selectedProperty.status }}</div>
+        </div>
+
+        <div class="additional-features" *ngIf="selectedProperty.features && selectedProperty.features.length > 0">
+          <h3>Características Adicionales</h3>
+          <ul>
+            @for (feature of selectedProperty.features; track feature) {
+              <li><i class="material-icons">check_circle</i> {{ feature }}</li>
+            }
+          </ul>
+        </div>
+
+        <div class="contact-section">
+          <h3>¿Interesado en esta propiedad?</h3>
+          <p>Contacta a nuestro agente para más información.</p>
+          <a href="https://wa.me/5211234567890?text=Hola!%20Estoy%20interesado%20en%20la%20propiedad:%20{{ selectedProperty.title }}%20({{ selectedProperty.location }})" target="_blank" class="btn-contact-agent-detail">
+            <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
