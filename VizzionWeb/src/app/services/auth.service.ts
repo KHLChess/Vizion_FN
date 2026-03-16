@@ -1,81 +1,59 @@
-import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core'; // Importar Inject
 import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { jwtDecode } from 'jwt-decode';
+import { AuthGateway, AUTH_GATEWAY } from '../application/ports/auth.gateway'; // Importar AUTH_GATEWAY
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api';
-  private authUrl = `${this.apiUrl}/auth`;
-  private usersUrl = `${this.apiUrl}/usuarios`;
-
   public loginStatusChanged = new Subject<boolean>();
 
-  constructor(
-    private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+  // Inyectar el puerto AuthGateway usando @Inject y el InjectionToken
+  constructor(@Inject(AUTH_GATEWAY) private authGateway: AuthGateway) { }
 
   login(credentials: { email: string, password: string }): Observable<{ jwt: string }> {
-    return this.http.post<{ jwt: string }>(`${this.authUrl}/login`, credentials).pipe(
+    return this.authGateway.login(credentials).pipe(
       tap(response => {
-        if (response && response.jwt && isPlatformBrowser(this.platformId)) {
-          localStorage.setItem('jwt_token', response.jwt);
+        if (response && response.jwt) {
+          this.authGateway.setToken(response.jwt);
           this.loginStatusChanged.next(true);
         }
       })
     );
   }
 
-  getToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('jwt_token');
-    }
-    return null;
-  }
-
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    if (token) {
-      try {
-        const decodedToken: any = jwtDecode(token);
-        return decodedToken.exp * 1000 > Date.now();
-      } catch (Error) {
-        return false;
-      }
-    }
-    return false;
+    const token = this.authGateway.getToken();
+    return token ? this.authGateway.isTokenValid(token) : false;
   }
 
   getUserRole(): string | null {
-    const token = this.getToken();
+    const token = this.authGateway.getToken();
     if (token) {
-      try {
-        const decodedToken: any = jwtDecode(token);
-        console.log('Rol del usuario decodificado:', decodedToken.role); // LOG
-        return decodedToken.role || null;
-      } catch (Error) {
-        console.error('Error al decodificar el token JWT para obtener el rol:', Error);
-        return null;
+      const decodedToken: any = this.authGateway.decodeToken(token);
+      if (decodedToken) {
+        let role = decodedToken.role;
+
+        if (!role && decodedToken.authorities && decodedToken.authorities.length > 0) {
+            const auth = decodedToken.authorities[0];
+            role = typeof auth === 'string' ? auth : auth.authority;
+        }
+
+        if (role && typeof role === 'string' && role.startsWith('ROLE_')) {
+            role = role.substring(5);
+        }
+        return role || null;
       }
     }
     return null;
   }
 
   getUserFullName(): string | null {
-    const token = this.getToken();
+    const token = this.authGateway.getToken();
     if (token) {
-      try {
-        const decodedToken: any = jwtDecode(token);
-        return decodedToken.fullName || null;
-      } catch (Error) {
-        console.error('Error al decodificar el token JWT para obtener el nombre completo:', Error);
-        return null;
-      }
+      const decodedToken: any = this.authGateway.decodeToken(token);
+      return decodedToken ? decodedToken.fullName || null : null;
     }
     return null;
   }
@@ -85,34 +63,16 @@ export class AuthService {
   }
 
   getUserId(): number | null {
-    const token = this.getToken();
+    const token = this.authGateway.getToken();
     if (token) {
-      try {
-        const decodedToken: any = jwtDecode(token);
-        return decodedToken.userId || null;
-      } catch (Error) {
-        console.error('Error al decodificar el token JWT para obtener el ID de usuario:', Error);
-        return null;
-      }
+      const decodedToken: any = this.authGateway.decodeToken(token);
+      return decodedToken ? decodedToken.userId || null : null;
     }
     return null;
   }
 
-  deleteAccount(): Observable<any> {
-    const userId = this.getUserId();
-    if (userId) {
-      return this.http.delete(`${this.usersUrl}/${userId}`);
-    } else {
-      return new Observable(observer => {
-        observer.error('No se pudo obtener el ID de usuario del token.');
-      });
-    }
-  }
-
   logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('jwt_token');
-      this.loginStatusChanged.next(false);
-    }
+    this.authGateway.removeToken();
+    this.loginStatusChanged.next(false);
   }
 }

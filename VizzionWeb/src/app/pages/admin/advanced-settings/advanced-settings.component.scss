@@ -1,45 +1,58 @@
 .advanced-settings-container {
-  padding: 100px 40px 40px;
-  min-height: 100vh;
-  background-color: #f4f7f6;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .header-section {
   margin-bottom: 30px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+
   h1 {
-    font-size: 2.8em;
+    font-size: 2em;
     color: #1A365D;
     margin: 0;
   }
 }
 
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.95em;
+}
+
+.alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
 .settings-card {
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  max-width: 900px;
-  margin: 0 auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  padding: 30px;
+  margin-bottom: 30px;
 }
 
 .settings-category {
   margin-bottom: 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e0e0e0;
-
-  &:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
 
   h2 {
-    font-size: 1.8em;
+    font-size: 1.5em;
     color: #1A365D;
     margin-bottom: 25px;
-    border-left: 5px solid #007bff;
-    padding-left: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
   }
 }
 
@@ -47,74 +60,96 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 0;
-}
+  padding: 15px 0;
+  border-bottom: 1px solid #f9f9f9;
 
-.setting-info {
-  flex: 1;
-  padding-right: 20px;
-
-  label {
-    font-weight: 600;
-    font-size: 1.1em;
-    color: #343a40;
-    display: block;
-    margin-bottom: 5px;
+  &:last-child {
+    border-bottom: none;
   }
 
-  .setting-key {
-    font-size: 0.9em;
-    color: #6c757d;
+  .setting-info {
+    flex: 1;
+    margin-right: 20px;
+
+    label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    p.setting-key {
+      font-size: 0.9em;
+      color: #777;
+      margin: 0;
+    }
+  }
+
+  .setting-input {
+    flex: 0 0 250px; /* Ancho fijo para el input/botón */
+    text-align: right;
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      border: 1px solid #007bff;
+
+      &:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+      }
+
+      &:disabled {
+        background-color: #cccccc;
+        border-color: #cccccc;
+        cursor: not-allowed;
+      }
+    }
   }
 }
 
-.setting-input {
-  flex: 0 0 40%;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
+.saving-indicator {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 
-  &:hover:not(:disabled) {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  .saving-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .spinner-small {
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top: 2px solid #fff;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    animation: spin 0.8s linear infinite;
-  }
+.spinner-small {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .setting-info {
+      margin-right: 0;
+      margin-bottom: 15px;
+    }
+
+    .setting-input {
+      width: 100%;
+      text-align: left;
+    }
+  }
 }

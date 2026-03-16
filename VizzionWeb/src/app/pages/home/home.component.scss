@@ -1,5 +1,5 @@
 .hero {
-  background: linear-gradient(rgba(26, 54, 93, 0.8), rgba(26, 54, 93, 0.8)), url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1973&q=80');
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1973&q=80');
   background-size: cover;
   background-position: center;
   color: var(--cosma-text-light);
@@ -14,7 +14,7 @@
 .hero h1 {
   font-size: 3.5rem;
   margin-bottom: 1rem;
-  color: var(--cosma-secondary);
+  color: var(--cosma-accent); /* Changed to Gold */
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -22,11 +22,11 @@
   font-size: 1.5rem;
   margin-bottom: 2rem;
   font-weight: 300;
-  color: black; /* Cambiado a negro */
+  color: var(--cosma-text-light); /* Changed to white for better contrast on dark bg */
 }
 
 .cta-button {
-  background-color: var(--cosma-secondary);
+  background-color: var(--cosma-secondary); /* Red button */
   color: var(--cosma-text-light);
   border: none;
   padding: 1rem 2rem;
@@ -40,7 +40,7 @@
 }
 
 .cta-button:hover {
-  background-color: #a88648;
+  background-color: #b71c1c; /* Darker red on hover */
   transform: translateY(-2px);
 }
 
@@ -73,6 +73,7 @@
   text-align: center;
   margin-bottom: 3rem;
   font-size: 2.5rem;
+  color: var(--cosma-primary);
 }
 
 .properties-grid {
@@ -205,8 +206,8 @@
   width: 200%;
   height: 200%;
   background-image:
-    linear-gradient(rgba(197, 160, 89, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(197, 160, 89, 0.1) 1px, transparent 1px);
+    linear-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
   background-size: 50px 50px;
   opacity: 0.3;
   animation: moveGrid 60s linear infinite;
@@ -226,7 +227,7 @@
 .services-section h2 {
   margin-bottom: 1rem;
   font-size: 2.5rem;
-  color: var(--cosma-secondary);
+  color: var(--cosma-accent); /* Gold title */
 }
 
 .services-section .section-subtitle {
@@ -258,14 +259,14 @@
 
 .service-card:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--cosma-secondary);
+  border-color: var(--cosma-accent);
   transform: translateY(-10px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .icon-wrapper {
   font-size: 3.5rem;
-  color: var(--cosma-secondary);
+  color: var(--cosma-accent);
   margin-bottom: 1.5rem;
   transition: transform 0.3s ease;
 }
@@ -297,7 +298,7 @@
   padding: 2rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  border: 1px solid rgba(197, 160, 89, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   backdrop-filter: blur(5px);
 }
 
@@ -311,7 +312,7 @@
 .stat-number {
   font-size: 3rem;
   font-weight: 700;
-  color: var(--cosma-secondary);
+  color: var(--cosma-accent);
   font-family: var(--font-family-serif);
   line-height: 1;
   margin-bottom: 0.5rem;
@@ -347,7 +348,7 @@
   color: var(--cosma-primary);
   padding: 6rem 1rem;
   text-align: center;
-  border-top: 1px solid var(--cosma-border);
+  border-top: 1px solid var(--cosma-bg-dark);
 }
 
 .cta-section h2 {
@@ -372,14 +373,14 @@
   font-weight: bold;
   transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(26, 54, 93, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
 .cta-button-secondary:hover {
   background-color: var(--cosma-secondary);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
 }
 
 /* Animations */

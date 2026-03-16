@@ -1,5 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { Property } from '../models/property.model'; // Importar el modelo Property
 
 @Pipe({
   name: 'propertyImage',
@@ -7,35 +8,33 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 })
 export class PropertyImagePipe implements PipeTransform {
 
+  private readonly IMAGE_API_BASE_URL = 'http://localhost:8080/api/images'; // URL base de la API de imágenes
+
   constructor(private sanitizer: DomSanitizer) {}
 
-  transform(value: any, placeholder: string = 'assets/images/placeholder-property.jpg'): SafeUrl {
-    console.log('PropertyImagePipe - Valor recibido:', value); // LOG: Ver qué tipo de valor llega
+  transform(value: Property | number | undefined, placeholder: string = 'assets/images/placeholder-property.jpg'): SafeUrl {
+    // console.log('PropertyImagePipe - Valor recibido:', value); // LOG: Ver qué tipo de valor llega
 
-    let imageData: string | null = null;
-    let contentType: string | null = null;
+    let imageId: number | undefined;
 
-    // Caso 1: Recibe un objeto Property (para la lista)
-    if (value && value.images && value.images.length > 0) {
-      const image = value.images[0];
-      imageData = image.data;
-      contentType = image.contentType;
-      console.log('PropertyImagePipe - Objeto Property. Usando primera imagen:', image); // LOG
+    // Caso 1: Recibe un objeto Property
+    if (typeof value === 'object' && value !== null && 'imageIds' in value && Array.isArray(value.imageIds) && value.imageIds.length > 0) {
+      imageId = value.imageIds[0]; // Tomar el primer ID de imagen
+      // console.log('PropertyImagePipe - Objeto Property. Usando primer imageId:', imageId); // LOG
     }
-    // Caso 2: Recibe un objeto de imagen individual (para la galería de detalles)
-    else if (value && value.data && value.contentType) {
-      imageData = value.data;
-      contentType = value.contentType;
-      console.log('PropertyImagePipe - Objeto de imagen individual:', value); // LOG
+    // Caso 2: Recibe directamente un imageId (number)
+    else if (typeof value === 'number') {
+      imageId = value;
+      // console.log('PropertyImagePipe - Recibido imageId directamente:', imageId); // LOG
     }
 
-    if (imageData && contentType) {
-      const imageUrl = 'data:' + contentType + ';base64,' + imageData;
-      console.log('PropertyImagePipe - URL generada:', imageUrl.substring(0, 100) + '...'); // LOG: Mostrar parte de la URL
+    if (imageId) {
+      const imageUrl = `${this.IMAGE_API_BASE_URL}/${imageId}`;
+      // console.log('PropertyImagePipe - URL generada:', imageUrl); // LOG
       return this.sanitizer.bypassSecurityTrustUrl(imageUrl);
     }
 
-    console.log('PropertyImagePipe - Usando placeholder:', placeholder); // LOG
+    // console.log('PropertyImagePipe - Usando placeholder:', placeholder); // LOG
     return this.sanitizer.bypassSecurityTrustUrl(placeholder);
   }
 }

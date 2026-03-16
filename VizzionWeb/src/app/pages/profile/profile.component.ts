@@ -7,6 +7,8 @@ import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, switchMap, tap, catchError, map } from 'rxjs/operators';
 import { Subject, of, concat, Observable, throwError } from 'rxjs';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Usuario } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-profile',
@@ -16,16 +18,12 @@ import { ConfirmationModalComponent } from '../../components/confirmation-modal/
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit {
-  user: any = {
-    id: null,
-    fullName: '',
-    email: '',
-    username: '',
-    role: '',
-    profilePictureData: null,
-    profilePictureContentType: ''
+  user: Usuario = {
+    username: '', email: '', role: ''
   };
-  originalUser: any;
+  originalUser: Usuario = {
+    username: '', email: '', role: ''
+  };
   isEditing = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -40,7 +38,6 @@ export class ProfileComponent implements OnInit {
   newPassword = '';
   confirmPassword = '';
 
-  currentPasswordValid: boolean | null = null;
   newPasswordDifferent: boolean | null = null;
   newPasswordLengthValid: boolean | null = null;
   passwordsMatch: boolean | null = null;
@@ -52,7 +49,6 @@ export class ProfileComponent implements OnInit {
   selectedFile: File | null = null;
   profilePicturePreviewUrl: string | null = null;
 
-  // Estado para el modal de confirmación
   showEmailChangeModal = false;
 
   constructor(
@@ -72,7 +68,7 @@ export class ProfileComponent implements OnInit {
       distinctUntilChanged(),
       switchMap(username => {
         if (username && username !== this.originalUser.username) {
-          return this.userService.checkUsernameAvailability(username, this.user.id);
+          return this.userService.checkUsernameAvailability(username, this.user.id!);
         }
         return of(true);
       })
@@ -86,26 +82,12 @@ export class ProfileComponent implements OnInit {
       distinctUntilChanged(),
       switchMap(email => {
         if (email && email !== this.originalUser.email) {
-          return this.userService.checkEmailAvailability(email, this.user.id);
+          return this.userService.checkEmailAvailability(email, this.user.id!);
         }
         return of(true);
       })
     ).subscribe(isAvailable => {
       this.emailAvailability = isAvailable;
-      this.cdr.detectChanges();
-    });
-
-    this.currentPasswordChanged.pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-      switchMap(password => {
-        if (password) {
-          return this.userService.validateCurrentPassword(password);
-        }
-        return of(false);
-      })
-    ).subscribe(isValid => {
-      this.currentPasswordValid = isValid;
       this.cdr.detectChanges();
     });
 
@@ -132,18 +114,18 @@ export class ProfileComponent implements OnInit {
     const userId = this.authService.getUserId();
     if (userId) {
       this.userService.getCurrentUserProfile().subscribe({
-        next: (data) => {
+        next: (data: Usuario) => {
           this.user = { ...data };
           this.originalUser = { ...data };
-          this.user.role = this.authService.getUserRole();
-          if (this.user.profilePictureData && this.user.profilePictureContentType) {
-            this.profilePicturePreviewUrl = `data:${this.user.profilePictureContentType};base64,${this.user.profilePictureData}`;
+          this.user.role = this.authService.getUserRole() || '';
+          if (this.user.profilePictureUrl) {
+            this.profilePicturePreviewUrl = this.user.profilePictureUrl;
           } else {
             this.profilePicturePreviewUrl = 'https://via.placeholder.com/150/007bff/ffffff?text=JD';
           }
           this.cdr.detectChanges();
         },
-        error: (err) => {
+        error: (err: HttpErrorResponse) => {
           console.error('Error al cargar el perfil:', err);
           this.errorMessage = 'No se pudo cargar el perfil del usuario.';
           this.cdr.detectChanges();
@@ -165,8 +147,8 @@ export class ProfileComponent implements OnInit {
     this.emailAvailability = null;
     this.resetPasswordFields();
     this.selectedFile = null;
-    this.profilePicturePreviewUrl = this.user.profilePictureData && this.user.profilePictureContentType
-                                    ? `data:${this.user.profilePictureContentType};base64,${this.user.profilePictureData}`
+    this.profilePicturePreviewUrl = this.user.profilePictureUrl
+                                    ? this.user.profilePictureUrl
                                     : 'https://via.placeholder.com/150/007bff/ffffff?text=JD';
   }
 
@@ -180,8 +162,8 @@ export class ProfileComponent implements OnInit {
     this.enablePasswordChange = false;
     this.resetPasswordFields();
     this.selectedFile = null;
-    this.profilePicturePreviewUrl = this.user.profilePictureData && this.user.profilePictureContentType
-                                    ? `data:${this.user.profilePictureContentType};base64,${this.user.profilePictureData}`
+    this.profilePicturePreviewUrl = this.user.profilePictureUrl
+                                    ? this.user.profilePictureUrl
                                     : 'https://via.placeholder.com/150/007bff/ffffff?text=JD';
   }
 
@@ -194,13 +176,15 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Verificar si hay cambio de email
+    if (this.enablePasswordChange && !this.isPasswordChangeValid()) {
+      return;
+    }
+
     if (this.user.email !== this.originalUser.email) {
       this.showEmailChangeModal = true;
       return;
     }
 
-    // Si no hay cambio de email, proceder directamente
     this.executeSave(false);
   }
 
@@ -211,95 +195,85 @@ export class ProfileComponent implements OnInit {
 
   onCancelEmailChange(): void {
     this.showEmailChangeModal = false;
-    // Revertir el cambio de email pero permitir guardar otros cambios si los hay
     this.user.email = this.originalUser.email;
     this.executeSave(false);
   }
 
-  private executeSave(emailChangedConfirmed: boolean): void {
-    let profileUpdateSuccess = false;
-    let passwordChangeSuccess = false;
-    let photoUploadSuccess = false;
+  private isPasswordChangeValid(): boolean {
+    if (!this.newPasswordDifferent) {
+      this.errorMessage = 'La nueva contraseña debe ser diferente a la actual.';
+      return false;
+    }
+    if (!this.passwordsMatch) {
+      this.errorMessage = 'La nueva contraseña y la confirmación no coinciden.';
+      return false;
+    }
+    if (!this.newPasswordLengthValid) {
+      this.errorMessage = 'La nueva contraseña debe tener al menos 6 caracteres.';
+      return false;
+    }
+    return true;
+  }
 
-    // 1. Observable para la subida de foto de perfil
-    let photoUploadOperation$: Observable<any> = of(null);
+  private executeSave(emailChangedConfirmed: boolean): void {
+    let photoUploadOperation$: Observable<Usuario | null> = of(null);
     if (this.selectedFile) {
       photoUploadOperation$ = this.userService.uploadProfilePicture(this.selectedFile).pipe(
-        tap((data) => {
-          this.user.profilePictureData = data.profilePictureData;
-          this.user.profilePictureContentType = data.profilePictureContentType;
-          this.originalUser.profilePictureData = data.profilePictureData;
-          this.originalUser.profilePictureContentType = data.profilePictureContentType;
-          this.profilePicturePreviewUrl = `data:${this.user.profilePictureContentType};base64,${this.user.profilePictureData}`;
+        tap((data: Usuario) => {
+          this.user.profilePictureUrl = data.profilePictureUrl;
+          this.originalUser.profilePictureUrl = data.profilePictureUrl;
+          this.profilePicturePreviewUrl = this.user.profilePictureUrl || 'https://via.placeholder.com/150/007bff/ffffff?text=JD';
           this.successMessage = 'Foto de perfil actualizada exitosamente.';
           this.errorMessage = null;
-          photoUploadSuccess = true;
         }),
-        catchError((err) => {
+        catchError((err: HttpErrorResponse) => {
           console.error('userService.uploadProfilePicture() - Error:', err);
-          this.errorMessage = 'No se pudo subir la foto de perfil. ' + (err.error.message || '');
+          this.errorMessage = 'No se pudo subir la foto de perfil. ' + (err.error?.message || '');
           this.cdr.detectChanges();
           return throwError(() => new Error('Error en subida de foto de perfil'));
         })
       );
     }
 
-    // 2. Observable para el cambio de contraseña
-    let passwordChangeOperation$: Observable<any> = of(null);
-    if (this.enablePasswordChange) {
-      if (!this.currentPasswordValid) {
-        this.errorMessage = 'La contraseña actual no es válida.';
-        return;
-      }
-      if (!this.newPasswordDifferent) {
-        this.errorMessage = 'La nueva contraseña debe ser diferente a la actual.';
-        return;
-      }
-      if (!this.passwordsMatch) {
-        this.errorMessage = 'La nueva contraseña y la confirmación no coinciden.';
-        return;
-      }
-      if (!this.newPasswordLengthValid) {
-        this.errorMessage = 'La nueva contraseña debe tener al menos 6 caracteres.';
-        return;
-      }
-
-      passwordChangeOperation$ = this.userService.changePassword(this.currentPassword, this.newPassword).pipe(
+    let passwordChangeOperation$: Observable<void | null> = of(null);
+    if (this.enablePasswordChange && this.isPasswordChangeValid()) {
+      // Corregido: Llamar a updatePassword en lugar de changePassword
+      passwordChangeOperation$ = this.userService.updatePassword(this.currentPassword, this.newPassword).pipe(
         tap(() => {
           this.successMessage = 'Contraseña actualizada exitosamente.';
           this.resetPasswordFields();
           this.enablePasswordChange = false;
-          passwordChangeSuccess = true;
         }),
-        catchError((err) => {
-          console.error('userService.changePassword() - Error:', err);
-          this.errorMessage = 'No se pudo cambiar la contraseña. ' + (err.error.message || '');
+        catchError((err: HttpErrorResponse) => {
+          console.error('userService.updatePassword() - Error:', err);
+          this.errorMessage = 'No se pudo cambiar la contraseña. ' + (err.error?.message || '');
           this.cdr.detectChanges();
           return throwError(() => new Error('Error en cambio de contraseña'));
         })
       );
     }
 
-    // 3. Observable para la actualización de los datos del perfil
-    let profileUpdateOperation$: Observable<any> = of(null);
+    let profileUpdateOperation$: Observable<Usuario | null> = of(null);
     const hasProfileDataChanged =
       this.user.fullName !== this.originalUser.fullName ||
       this.user.username !== this.originalUser.username ||
       this.user.email !== this.originalUser.email;
 
     if (hasProfileDataChanged) {
-      const updatedData = {
+      const updatedData: Usuario = {
+        id: this.user.id,
         fullName: this.user.fullName,
         email: this.user.email,
         username: this.user.username,
+        role: this.user.role
       };
 
       profileUpdateOperation$ = this.userService.updateCurrentUserProfile(updatedData).pipe(
         tap({
-          next: (data) => {
+          next: (data: Usuario) => {
             this.user = { ...data };
             this.originalUser = { ...data };
-            this.user.role = this.authService.getUserRole();
+            this.user.role = this.authService.getUserRole() || '';
             this.isEditing = false;
             this.successMessage = 'Perfil actualizado exitosamente.';
 
@@ -312,20 +286,18 @@ export class ProfileComponent implements OnInit {
             }
 
             this.cdr.detectChanges();
-            profileUpdateSuccess = true;
           },
-          error: (err) => {
+          error: (err: HttpErrorResponse) => {
             console.error('userService.updateCurrentUserProfile() - Error:', err);
-            this.errorMessage = 'No se pudo actualizar el perfil. ' + (err.error.message || '');
+            this.errorMessage = 'No se pudo actualizar el perfil. ' + (err.error?.message || '');
             this.cdr.detectChanges();
           }
         })
       );
     }
 
-    // Combinar todas las operaciones
     concat(photoUploadOperation$, passwordChangeOperation$, profileUpdateOperation$).pipe(
-      catchError((err) => {
+      catchError((err: HttpErrorResponse) => {
         console.error('Error en la secuencia concat de onSave:', err);
         return of(null);
       })
@@ -352,8 +324,8 @@ export class ProfileComponent implements OnInit {
       reader.readAsDataURL(file);
     } else {
       this.selectedFile = null;
-      this.profilePicturePreviewUrl = this.user.profilePictureData && this.user.profilePictureContentType
-                                      ? `data:${this.user.profilePictureContentType};base64,${this.user.profilePictureData}`
+      this.profilePicturePreviewUrl = this.user.profilePictureUrl
+                                      ? this.user.profilePictureUrl
                                       : 'https://via.placeholder.com/150/007bff/ffffff?text=JD';
     }
   }
@@ -382,7 +354,6 @@ export class ProfileComponent implements OnInit {
     this.currentPassword = '';
     this.newPassword = '';
     this.confirmPassword = '';
-    this.currentPasswordValid = null;
     this.newPasswordDifferent = null;
     this.passwordsMatch = null;
     this.newPasswordLengthValid = null;

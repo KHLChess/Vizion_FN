@@ -1,10 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CurrencyPipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router'; // Importar ActivatedRoute
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PropertyService } from '../../services/property.service';
 import { Property } from '../../models/property.model';
 import { PropertyImagePipe } from '../../pipes/property-image.pipe';
+import { HttpErrorResponse } from '@angular/common/http'; // Importar HttpErrorResponse
 
 @Component({
   selector: 'app-properties',
@@ -15,13 +16,13 @@ import { PropertyImagePipe } from '../../pipes/property-image.pipe';
 })
 export class PropertiesComponent implements OnInit {
   private propertyService = inject(PropertyService);
-  private route = inject(ActivatedRoute); // Inyectar ActivatedRoute
+  private route = inject(ActivatedRoute);
 
   isLoading = false;
   properties: Property[] = [];
   filteredProperties: Property[] = [];
   paginatedProperties: Property[] = [];
-  selectedProperty: Property | null = null; // Nueva propiedad para el detalle de una sola propiedad
+  selectedProperty: Property | null = null;
 
   // Paginación
   currentPage = 1;
@@ -43,7 +44,7 @@ export class PropertiesComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const propertyId = params.get('id');
-      console.log('ngOnInit - propertyId de la ruta:', propertyId); // LOG
+      console.log('ngOnInit - propertyId de la ruta:', propertyId);
       if (propertyId) {
         this.loadPropertyDetails(Number(propertyId));
       } else {
@@ -53,16 +54,16 @@ export class PropertiesComponent implements OnInit {
   }
 
   loadProperties(): void {
-    console.log('loadProperties - Cargando lista de propiedades.'); // LOG
+    console.log('loadProperties - Cargando lista de propiedades.');
     this.isLoading = true;
-    this.propertyService.getProperties().subscribe({
-      next: (properties: Property[]) => {
+    this.propertyService.getAllProperties().subscribe({ // Corregido: usar getAllProperties()
+      next: (properties: Property[]) => { // Tipado explícito
         this.properties = properties;
         this.calculatePriceLimits();
         this.applyFiltersAndSorting();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al cargar propiedades:', err);
         this.isLoading = false;
       }
@@ -70,18 +71,18 @@ export class PropertiesComponent implements OnInit {
   }
 
   loadPropertyDetails(id: number): void {
-    console.log('loadPropertyDetails - Cargando detalles para ID:', id); // LOG
+    console.log('loadPropertyDetails - Cargando detalles para ID:', id);
     this.isLoading = true;
     this.propertyService.getPropertyById(id).subscribe({
-      next: (property: Property) => {
+      next: (property: Property) => { // Tipado explícito
         this.selectedProperty = property;
-        console.log('loadPropertyDetails - Propiedad cargada:', this.selectedProperty); // LOG
+        console.log('loadPropertyDetails - Propiedad cargada:', this.selectedProperty);
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => { // Tipado explícito
         console.error('Error al cargar detalles de la propiedad:', err);
         this.isLoading = false;
-        this.selectedProperty = null; // En caso de error, no mostrar detalles
+        this.selectedProperty = null;
       }
     });
   }
@@ -128,8 +129,9 @@ export class PropertiesComponent implements OnInit {
       default:
         // Ordenar por fecha de actualización (o creación si no hay actualización) de más nueva a más vieja
         this.filteredProperties.sort((a, b) => {
-          const dateA = new Date(a.updatedAt || a.createdAt).getTime();
-          const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+          // Manejar Date | undefined de forma segura
+          const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime(); // Usar 0 como fallback para Date
+          const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime(); // Usar 0 como fallback para Date
           return dateB - dateA;
         });
         break;

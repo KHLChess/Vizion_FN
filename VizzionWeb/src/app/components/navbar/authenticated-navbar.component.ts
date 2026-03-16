@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service'; // Importar UserService
+import { HttpErrorResponse } from '@angular/common/http'; // Importar HttpErrorResponse
 
 @Component({
   selector: 'app-authenticated-navbar',
@@ -11,15 +13,10 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './authenticated-navbar.component.scss'
 })
 export class AuthenticatedNavbarComponent {
-  // isScrolled = false; // Propiedad eliminada
   isMenuOpen = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
-
-  // @HostListener('window:scroll', []) // HostListener eliminado
-  // onWindowScroll() {
-  //   this.isScrolled = window.scrollY > 50;
-  // }
+  // Inyectar UserService
+  constructor(private authService: AuthService, private userService: UserService, private router: Router) { }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -46,14 +43,15 @@ export class AuthenticatedNavbarComponent {
   onDeleteAccount(): void {
     this.closeMenu();
     if (confirm('¿Está seguro de que desea eliminar su cuenta de forma permanente? Esta acción no se puede deshacer.')) {
-      this.authService.deleteAccount().subscribe({
+      // Usar userService.deleteMyAccount() en lugar de authService.deleteAccount()
+      this.userService.deleteMyAccount().subscribe({
         next: () => {
           console.log('Cuenta eliminada exitosamente.');
           alert('Su cuenta ha sido eliminada exitosamente.');
-          this.authService.logout();
+          this.authService.logout(); // Cerrar sesión después de eliminar la cuenta
           this.router.navigate(['/login']);
         },
-        error: (err) => {
+        error: (err: HttpErrorResponse) => { // Tipado explícito para 'err'
           console.error('Error al eliminar la cuenta:', err);
           if (err.status === 403) {
             alert('No se pudo eliminar la cuenta: ' + (err.error.message || 'Acción no permitida.'));

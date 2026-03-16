@@ -27,7 +27,7 @@
               [id]="setting.key"
               [type]="setting.type === 'NUMBER' ? 'number' : 'text'"
               [(ngModel)]="setting.value"
-              [name]="setting.key"
+              [name]="setting.key + '_value'"
               [readOnly]="!isRootUser()"
               [ngClass]="{'readonly-input': !isRootUser()}">
 
@@ -36,7 +36,7 @@
               *ngIf="setting.type === 'TEXTAREA'"
               [id]="setting.key"
               [(ngModel)]="setting.value"
-              [name]="setting.key"
+              [name]="setting.key + '_value'"
               [readOnly]="!isRootUser()"
               [ngClass]="{'readonly-input': !isRootUser()}"
               rows="3"></textarea>
@@ -47,7 +47,7 @@
                 [id]="setting.key"
                 type="text"
                 [(ngModel)]="setting.value"
-                [name]="setting.key + '_url'"
+                [name]="setting.key + '_value'"
                 [readOnly]="true"
                 class="readonly-input">
               <input
@@ -57,6 +57,18 @@
                 [disabled]="!isRootUser() || isSaving"
                 accept="image/*">
               <img [src]="setting.tempPreviewUrl || setting.value" alt="Preview" class="image-preview" *ngIf="setting.tempPreviewUrl || setting.value">
+            </div>
+
+            <!-- Campo para la descripción (editable solo por ROOT) -->
+            <div *ngIf="isRootUser()" class="form-group-description">
+              <label [for]="setting.key + '_description'">Descripción</label>
+              <input
+                [id]="setting.key + '_description'"
+                type="text"
+                [(ngModel)]="setting.description"
+                [name]="setting.key + '_description'"
+                [readOnly]="!isRootUser()"
+                [ngClass]="{'readonly-input': !isRootUser()}">
             </div>
           </div>
         </div>

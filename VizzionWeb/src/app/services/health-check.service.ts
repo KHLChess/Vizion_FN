@@ -1,33 +1,45 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core'; // Importar Inject y PLATFORM_ID
+import { isPlatformBrowser } from '@angular/common'; // Importar isPlatformBrowser
 import { Observable, timer } from 'rxjs';
 import { switchMap, catchError, tap } from 'rxjs/operators';
 import { ServerStatusService } from './server-status.service';
+import { HealthCheckGateway, HEALTH_CHECK_GATEWAY } from '../application/ports/health-check.gateway';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HealthCheckService {
-  private healthUrl = 'http://localhost:8080/api/health';
+  private isBrowser: boolean;
 
   constructor(
-    private http: HttpClient,
-    private serverStatusService: ServerStatusService
-  ) { }
+    @Inject(HEALTH_CHECK_GATEWAY) private healthCheckGateway: HealthCheckGateway,
+    private serverStatusService: ServerStatusService,
+    @Inject(PLATFORM_ID) private platformId: Object // Inyectar PLATFORM_ID
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId); // Determinar si estamos en el navegador
+  }
 
-  ping(): Observable<any> {
-    return this.http.get(this.healthUrl, { responseType: 'text' });
+  ping(): Observable<boolean> {
+    return this.healthCheckGateway.checkBackendHealth();
   }
 
   startMonitoring(interval: number = 10000): void {
-    timer(0, interval).pipe(
-      switchMap(() => this.ping().pipe(
-        tap(() => this.serverStatusService.setServerDown(false)),
-        catchError(() => {
-          this.serverStatusService.setServerDown(true);
-          return [];
-        })
-      ))
-    ).subscribe();
+    if (this.isBrowser) { // Solo iniciar el monitoreo en el navegador
+      timer(0, interval).pipe(
+        switchMap(() => this.ping().pipe(
+          tap(isHealthy => {
+            if (isHealthy) {
+              this.serverStatusService.setServerDown(false);
+            } else {
+              this.serverStatusService.setServerDown(true);
+            }
+          }),
+          catchError(() => {
+            this.serverStatusService.setServerDown(true);
+            return [];
+          })
+        ))
+      ).subscribe();
+    }
   }
 }

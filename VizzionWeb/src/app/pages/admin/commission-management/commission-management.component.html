@@ -23,7 +23,7 @@
           <tr>
             <th>Beneficiario</th>
             <th>Monto (USD)</th>
-            <th>Monto (MXN)</th>
+            <!-- <th>Monto (MXN)</th> Eliminado -->
             <th>Estado</th>
             <th>Propiedad</th>
             <th>Cliente Comprador</th>
@@ -36,7 +36,7 @@
           <tr *ngFor="let commission of filteredCommissions">
             <td>{{ commission.earningUserName }}</td>
             <td>{{ commission.amount | currency:'USD':'symbol':'1.2-2' }}</td>
-            <td>{{ (commission.amount * usdToMxnRate) | currency:'MXN':'symbol':'1.2-2' }}</td>
+            <!-- <td>{{ (commission.amount * usdToMxnRate) | currency:'MXN':'symbol':'1.2-2' }}</td> Eliminado -->
             <td>
               <span class="status-badge" [ngClass]="commission.status.toLowerCase()">
                 {{ commission.status }}
@@ -72,7 +72,7 @@
             </td>
           </tr>
           <tr *ngIf="filteredCommissions.length === 0">
-            <td colspan="9" class="no-results">No hay comisiones para mostrar.</td>
+            <td colspan="8" class="no-results">No hay comisiones para mostrar.</td>
           </tr>
         </tbody>
       </table>
@@ -139,7 +139,7 @@
       <p><strong>ID:</strong> <span>{{ commissionToView?.id }}</span></p>
       <p><strong>Beneficiario:</strong> <span>{{ commissionToView?.earningUserName }}</span></p>
       <p><strong>Monto (USD):</strong> <span>{{ commissionToView?.amount | currency:'USD':'symbol':'1.2-2' }}</span></p>
-      <p><strong>Monto (MXN):</strong> <span>{{ (commissionToView?.amount * usdToMxnRate) | currency:'MXN':'symbol':'1.2-2' }}</span></p>
+      <!-- <p><strong>Monto (MXN):</strong> <span>{{ (commissionToView?.amount * usdToMxnRate) | currency:'MXN':'symbol':'1.2-2' }}</span></p> Eliminado -->
       <p><strong>Estado:</strong> <span>{{ commissionToView?.status }}</span></p>
       <p><strong>Propiedad:</strong> <span>{{ commissionToView?.generatingPropertyName }}</span></p>
       <p><strong>Cliente Comprador:</strong> <span>{{ commissionToView?.generatingClientName }}</span></p>
