@@ -1,24 +1,18 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core'; // Importar Inject
 import { Observable } from 'rxjs';
+import { ReportGateway, REPORT_GATEWAY } from '../application/ports/report.gateway'; // Importar REPORT_GATEWAY
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReportService {
-  private apiUrl = 'http://localhost:8080/api/reports';
-
-  constructor(private http: HttpClient) { }
+  constructor(@Inject(REPORT_GATEWAY) private reportGateway: ReportGateway) { }
 
   downloadPropertiesReport(format: 'pdf' | 'xls'): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/properties?format=${format}`, {
-      responseType: 'blob'
-    });
+    return this.reportGateway.downloadPropertiesReport(format);
   }
 
   downloadCommissionsReport(format: 'pdf' | 'xls'): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/commissions?format=${format}`, {
-      responseType: 'blob'
-    });
+    return this.reportGateway.downloadCommissionsReport(format);
   }
 }

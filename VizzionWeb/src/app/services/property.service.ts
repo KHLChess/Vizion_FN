@@ -1,60 +1,51 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core'; // Importar Inject
 import { Observable } from 'rxjs';
+import { PropertyGateway, PROPERTY_GATEWAY } from '../application/ports/property.gateway'; // Importar PROPERTY_GATEWAY
+import { Property } from '../models/property.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PropertyService {
-  private apiUrl = 'http://localhost:8080/api/properties';
+  constructor(@Inject(PROPERTY_GATEWAY) private propertyGateway: PropertyGateway) { }
 
-  constructor(private http: HttpClient) { }
-
-  getAllProperties(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAllProperties(): Observable<Property[]> {
+    return this.propertyGateway.getAllProperties();
   }
 
-  getProperties(): Observable<any[]> {
-    return this.getAllProperties();
+  getFeaturedProperties(): Observable<Property[]> {
+    return this.propertyGateway.getFeaturedProperties();
   }
 
-  getFeaturedProperties(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/featured`);
+  getPropertyById(id: number): Observable<Property> {
+    return this.propertyGateway.getPropertyById(id);
   }
 
-  getPropertyById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  createProperty(propertyData: Property): Observable<Property> {
+    return this.propertyGateway.createProperty(propertyData);
   }
 
-  createProperty(propertyData: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, propertyData);
-  }
-
-  updateProperty(id: number, propertyData: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, propertyData);
+  updateProperty(id: number, propertyData: Property): Observable<Property> {
+    return this.propertyGateway.updateProperty(id, propertyData);
   }
 
   deleteProperty(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    return this.propertyGateway.deleteProperty(id);
   }
 
   deletePropertiesBatch(ids: number[]): Observable<any> {
-    return this.http.request('delete', `${this.apiUrl}/batch`, { body: ids });
+    return this.propertyGateway.deletePropertiesBatch(ids);
   }
 
   deleteAllProperties(): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/delete-all`);
+    return this.propertyGateway.deleteAllProperties();
   }
 
   uploadPropertyImages(propertyId: number, files: File[]): Observable<any> {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file, file.name);
-    });
-    return this.http.post<any>(`${this.apiUrl}/${propertyId}/images`, formData);
+    return this.propertyGateway.uploadPropertyImages(propertyId, files);
   }
 
   deletePropertyImage(imageId: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/images/${imageId}`);
+    return this.propertyGateway.deletePropertyImage(imageId);
   }
 }

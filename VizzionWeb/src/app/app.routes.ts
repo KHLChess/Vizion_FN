@@ -15,7 +15,7 @@ import { UserManagementComponent } from './pages/admin/user-management/user-mana
 import { PropertyManagementComponent } from './pages/admin/property-management/property-management.component';
 import { CommissionManagementComponent } from './pages/admin/commission-management/commission-management.component';
 import { SettingsManagementComponent } from './pages/admin/settings-management/settings-management.component';
-import { AdvancedSettingsComponent } from './pages/admin/advanced-settings/advanced-settings.component'; // Importar AdvancedSettingsComponent
+import { AdvancedSettingsComponent } from './pages/admin/advanced-settings/advanced-settings.component'; // Re-añadido
 import { UserPanelComponent } from './pages/user-panel/user-panel.component';
 
 
@@ -44,9 +44,9 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROOT', 'OWNER', 'MANAGER', 'SELLER', 'CLIENT'] }
   },
-  {
-    path: 'dashboard/settings',
-    component: AdvancedSettingsComponent, // Corregido: apunta a AdvancedSettingsComponent
+  { // Re-añadido
+    path: 'dashboard/advanced-settings', // Cambiado a advanced-settings para evitar conflicto con /admin/settings
+    component: AdvancedSettingsComponent,
     canActivate: [AuthGuard],
     data: { roles: ['ROOT'], title: 'Configuración Avanzada', description: 'Ajustes técnicos y de seguridad del sistema.' }
   },

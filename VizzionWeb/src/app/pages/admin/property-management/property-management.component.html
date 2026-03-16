@@ -50,21 +50,13 @@
       <div class="form-row" *ngIf="currentProperty.status === 'Vendido'">
         <div class="form-group">
           <label for="soldBy">Vendido por <span class="required-asterisk">*</span></label>
-          <select id="soldBy" name="soldById" [(ngModel)]="currentProperty.soldById" (change)="onSoldByChange(currentProperty.soldById)" required>
-            <option [ngValue]="null" disabled>Seleccione quién vendió...</option>
-            <option *ngFor="let user of salesforceUsers" [value]="user.id">
-              {{ user.fullName }} ({{ user.role | titlecase }})
-            </option>
-          </select>
+          <!-- Usar soldByName en lugar de soldById -->
+          <input type="text" id="soldBy" name="soldByName" [(ngModel)]="currentProperty.soldByName" required>
         </div>
         <div class="form-group">
           <label for="boughtBy">Comprado por <span class="required-asterisk">*</span></label>
-          <select id="boughtBy" name="boughtById" [(ngModel)]="currentProperty.boughtById" required [disabled]="dependentUsers.length === 0">
-            <option [ngValue]="null" disabled>{{ dependentUsers.length > 0 ? 'Seleccione el comprador...' : 'No hay dependientes disponibles' }}</option>
-            <option *ngFor="let dep of dependentUsers" [value]="dep.id">
-              {{ dep.fullName }} ({{ dep.role | titlecase }})
-            </option>
-          </select>
+          <!-- Usar boughtByName en lugar de boughtById -->
+          <input type="text" id="boughtBy" name="boughtByName" [(ngModel)]="currentProperty.boughtByName" required>
         </div>
       </div>
 
@@ -98,9 +90,9 @@
         <label for="features">Características (presiona Enter para añadir)</label>
         <input type="text" id="features" class="feature-input" [(ngModel)]="featureInput" (keydown)="addFeature($event)" name="featureInput">
         <div class="features-container">
-          <span *ngFor="let feature of currentProperty.features; let i = index" class="feature-tag">
+          <span *ngFor="let feature of currentProperty.features" class="feature-tag">
             {{ feature }}
-            <button type="button" (click)="removeFeature(i)">&times;</button>
+            <button type="button" (click)="removeFeature(currentProperty.features!.indexOf(feature))">&times;</button>
           </span>
         </div>
       </div>
@@ -124,10 +116,10 @@
         </div>
 
         <!-- Galería de imágenes existentes (en modo edición) -->
-        <div class="image-preview-container" *ngIf="isEditing && currentProperty.images?.length > 0">
-          <div *ngFor="let image of currentProperty.images" class="image-preview-item">
-            <img [src]="'data:' + image.contentType + ';base64,' + image.data" [alt]="image.name">
-            <button type="button" class="btn-remove-image" (click)="removeExistingImage(image.id)">&times;</button>
+        <div class="image-preview-container" *ngIf="isEditing && currentProperty.imageIds && currentProperty.imageIds.length > 0">
+          <div *ngFor="let imageId of currentProperty.imageIds" class="image-preview-item">
+            <img [src]="imageId | propertyImage" alt="Imagen de propiedad">
+            <button type="button" class="btn-remove-image" (click)="removeExistingImage(imageId)">&times;</button>
           </div>
         </div>
       </div>
@@ -185,7 +177,7 @@
         <tbody>
           <tr *ngFor="let property of filteredProperties">
             <td>
-              <input type="checkbox" [checked]="isSelected(property.id)" (change)="toggleSelection(property.id)">
+              <input type="checkbox" [checked]="isSelected(property.id!)" (change)="toggleSelection(property.id!)">
             </td>
             <td>{{ property.title }}</td>
             <td>{{ property.location }}</td>
@@ -199,7 +191,7 @@
             <td>{{ property.beds }} Hab | {{ property.baths }} Baños | {{ property.area }} m²</td>
             <td class="actions-column">
               <button class="btn btn-edit" (click)="onEditProperty(property)"><i class="material-icons">edit</i></button>
-              <button class="btn btn-delete" (click)="onDeleteProperty(property.id)"><i class="material-icons">delete</i></button>
+              <button class="btn btn-delete" (click)="onDeleteProperty(property.id!)"><i class="material-icons">delete</i></button>
             </td>
           </tr>
         </tbody>

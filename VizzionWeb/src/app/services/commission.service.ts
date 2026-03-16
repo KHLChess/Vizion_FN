@@ -1,48 +1,47 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core'; // Importar Inject
 import { Observable } from 'rxjs';
+import { CommissionGateway, COMMISSION_GATEWAY } from '../application/ports/commission.gateway'; // Importar COMMISSION_GATEWAY
+import { Commission } from '../models/commission.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommissionService {
-  private apiUrl = 'http://localhost:8080/api/commissions';
-
-  constructor(private http: HttpClient) { }
+  constructor(@Inject(COMMISSION_GATEWAY) private commissionGateway: CommissionGateway) { }
 
   /**
    * Obtiene todas las comisiones.
-   * @returns Un observable con la lista de DTOs de comisiones.
+   * @returns Un observable con la lista de comisiones.
    */
-  getAllCommissions(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAllCommissions(): Observable<Commission[]> {
+    return this.commissionGateway.getAllCommissions();
   }
 
   /**
    * Marca una comisión como pagada.
    * @param commissionId El ID de la comisión a pagar.
-   * @returns Un observable con el DTO de la comisión actualizada.
+   * @returns Un observable con la comisión actualizada.
    */
-  payCommission(commissionId: number): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${commissionId}/pay`, {});
+  payCommission(commissionId: number): Observable<Commission> {
+    return this.commissionGateway.payCommission(commissionId);
   }
 
   /**
    * Anula una comisión.
    * @param commissionId El ID de la comisión a anular.
-   * @returns Un observable con el DTO de la comisión actualizada.
+   * @returns Un observable con la comisión actualizada.
    */
-  voidCommission(commissionId: number): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${commissionId}/void`, {});
+  voidCommission(commissionId: number): Observable<Commission> {
+    return this.commissionGateway.voidCommission(commissionId);
   }
 
   /**
    * Actualiza las notas de una comisión.
    * @param commissionId El ID de la comisión.
    * @param notes Las nuevas notas.
-   * @returns Un observable con el DTO de la comisión actualizada.
+   * @returns Un observable con la comisión actualizada.
    */
-  updateCommissionNotes(commissionId: number, notes: string): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${commissionId}/notes`, { notes });
+  updateCommissionNotes(commissionId: number, notes: string): Observable<Commission> {
+    return this.commissionGateway.updateCommissionNotes(commissionId, notes);
   }
 }

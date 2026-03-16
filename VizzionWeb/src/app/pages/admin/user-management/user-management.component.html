@@ -26,14 +26,14 @@
       <div class="form-group">
         <label for="fullName">Nombre Completo <span class="required-asterisk">*</span></label>
         <input type="text" id="fullName" name="fullName"
-               [ngModel]="isCreating ? newUser.fullName : selectedUser.fullName"
-               (ngModelChange)="isCreating ? newUser.fullName = $event : selectedUser.fullName = $event" required>
+               [ngModel]="isCreating ? newUser.fullName : selectedUser!.fullName"
+               (ngModelChange)="isCreating ? newUser.fullName = $event : selectedUser!.fullName = $event" required>
       </div>
 
       <div class="form-group">
         <label for="username">Nombre de Usuario <span class="required-asterisk">*</span></label>
         <input type="text" id="username" name="username"
-               [ngModel]="isCreating ? newUser.username : selectedUser.username"
+               [ngModel]="isCreating ? newUser.username : selectedUser!.username"
                (ngModelChange)="onUsernameChange($event)" required>
         <div *ngIf="usernameAvailability === false" class="validation-error">Este nombre de usuario ya está en uso.</div>
         <div *ngIf="usernameAvailability === true" class="validation-success">Nombre de usuario disponible.</div>
@@ -42,7 +42,7 @@
       <div class="form-group">
         <label for="email">Correo Electrónico <span class="required-asterisk">*</span></label>
         <input type="email" id="email" name="email" #emailInput="ngModel"
-               [ngModel]="isCreating ? newUser.email : selectedUser.email"
+               [ngModel]="isCreating ? newUser.email : selectedUser!.email"
                (ngModelChange)="onEmailChange($event)" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$">
         <div *ngIf="emailAvailability === false" class="validation-error">Este correo electrónico ya está en uso.</div>
         <div *ngIf="emailAvailability === true" class="validation-success">Correo electrónico disponible.</div>
@@ -54,15 +54,15 @@
         <input type="password" id="password" name="password" [(ngModel)]="newUser.password" required>
       </div>
 
-      <div class="form-group" *ngIf="isEditing && originalUser.role === 'REFERIDO' && selectedUser.role !== 'REFERIDO'">
+      <div class="form-group" *ngIf="isEditing && originalUser!.role === 'REFERIDO' && selectedUser!.role !== 'REFERIDO'">
         <label for="newPassword">Asignar Contraseña para Nuevo Rol <span class="required-asterisk">*</span></label>
-        <input type="password" id="newPassword" name="newPassword" [(ngModel)]="selectedUser.password" required>
+        <input type="password" id="newPassword" name="newPassword" [(ngModel)]="selectedUser!.password" required>
       </div>
 
       <div class="form-group">
         <label for="role">Rol <span class="required-asterisk">*</span></label>
         <select id="role" name="role"
-                [ngModel]="isCreating ? newUser.role : selectedUser.role"
+                [ngModel]="isCreating ? newUser.role : selectedUser!.role"
                 (ngModelChange)="onRoleChange($event)" required>
           <option *ngFor="let role of availableRoles" [value]="role">{{ role | titlecase }}</option>
         </select>
@@ -73,24 +73,20 @@
         <select id="managedBy" name="managedById"
                 [(ngModel)]="newUser.managedById" required>
           <option [ngValue]="null" disabled>Seleccione un gestor...</option>
-          <option *ngFor="let manager of managableUsers" [value]="manager.id">
-            {{ manager.fullName }} ({{ manager.role | titlecase }})
-          </option>
+          <option *ngFor="let manager of managableUsers" [value]="manager.id">{{ manager.fullName }} ({{ manager.role | titlecase }})</option>
         </select>
         <div *ngIf="managableUsers.length === 0" class="validation-error">
           No hay gestores disponibles para asignar. No se puede crear un cliente.
         </div>
       </div>
 
-      <div class="form-group" *ngIf="(isCreating ? newUser.role : selectedUser.role) === 'REFERIDO'">
+      <div class="form-group" *ngIf="(isCreating ? newUser.role : selectedUser!.role) === 'REFERIDO'">
         <label for="referrer">Referido Por <span class="required-asterisk">*</span></label>
         <select id="referrer" name="referrerId"
-                [ngModel]="isCreating ? newUser.referrerId : selectedUser.referrerId"
-                (ngModelChange)="isCreating ? newUser.referrerId = $event : selectedUser.referrerId = $event" required>
+                [ngModel]="isCreating ? newUser.referrerId : selectedUser!.referrerId"
+                (ngModelChange)="isCreating ? newUser.referrerId = $event : selectedUser!.referrerId = $event" required>
           <option [ngValue]="null" disabled>Seleccione un referente...</option>
-          <option *ngFor="let user of potentialReferrers" [value]="user.id">
-            {{ user.fullName }} ({{ user.role | titlecase }})
-          </option>
+          <option *ngFor="let user of potentialReferrers" [value]="user.id">{{ user.fullName }} ({{ user.role | titlecase }})</option>
         </select>
       </div>
 
@@ -125,13 +121,16 @@
         <tbody>
           <tr *ngFor="let user of filteredUsers">
             <td>
-              <input type="checkbox" [checked]="isSelected(user.id)" (change)="toggleSelection(user.id)">
+              <input type="checkbox" [checked]="isSelected(user.id!)" (change)="toggleSelection(user.id!)">
             </td>
             <!-- Celda ID ELIMINADA -->
-            <td>{{ user.fullName }}</td><td>{{ user.email }}</td><td>{{ user.username }}</td><td>{{ user.role | titlecase }}</td><td>{{ user.referrer?.fullName || 'N/A' }}</td><td>{{ user.managedBy?.fullName || 'N/A' }}</td>
+            <td>{{ user.fullName }}</td><td>{{ user.email }}</td><td>{{ user.username }}</td><td>{{ user.role | titlecase }}</td>
+            <!-- Usar referrerName y managedByName -->
+            <td>{{ user.referrerName || 'N/A' }}</td>
+            <td>{{ user.managedByName || 'N/A' }}</td>
             <td class="actions-column">
               <button class="btn btn-edit" (click)="onEditUser(user)"><i class="material-icons">edit</i></button>
-              <button class="btn btn-delete" (click)="onDeleteUser(user.id)"><i class="material-icons">delete</i></button>
+              <button class="btn btn-delete" (click)="onDeleteUser(user.id!)"><i class="material-icons">delete</i></button>
             </td>
           </tr>
         </tbody>
@@ -173,9 +172,7 @@
       <button class="btn btn-secondary" (click)="onCancelReassignment()">Cancelar</button>
       <button class="btn btn-confirm" (click)="onConfirmReassignment()" [disabled]="!newManagerId || isReassigning">
         <span *ngIf="!isReassigning">Confirmar Traspaso</span>
-        <span *ngIf="isReassigning" class="saving-indicator">
-          <span class="spinner-small"></span> Reasignando...
-        </span>
+        <span *ngIf="isReassigning" class="spinner-small"></span> Reasignando...
       </button>
     </div>
   </div>
